@@ -300,6 +300,6 @@ achievementSchema.statics.getLeaderboard = async function(limit = 10, category =
   return await this.aggregate(pipeline);
 };
 
-const Achievement = mongoose.model("Achievement", achievementSchema);
+const Achievement = mongoose.model("Achivement", achievementSchema);
 
 module.exports = Achievement;

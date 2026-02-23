@@ -265,6 +265,114 @@ const getCourseMeta = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get course stats
+// @route   GET /api/courses/stats
+// @access  Private (Admin only)
+const getCourseStats = asyncHandler(async (req, res) => {
+  const totalCourses = await Course.countDocuments();
+  const activeCourses = await Course.countDocuments({ isActive: true });
+  const totalEnrollments = await Course.aggregate([
+    { $unwind: '$enrolledUsers' },
+    { $count: 'total' }
+  ]);
+
+  res.status(200).json({
+    success: true,
+    totalCourses,
+    activeCourses,
+    totalEnrollments: totalEnrollments[0]?.total || 0
+  });
+});
+
+// @desc    Get my courses
+// @route   GET /api/courses/my-courses
+// @access  Private (Enrolled users)
+const getMyCourses = asyncHandler(async (req, res) => {
+  const courses = await Course.find({
+    'enrolledUsers.user': req.user._id
+  }).populate('instructor', 'name profileImage');
+
+  res.status(200).json({
+    success: true,
+    courses
+  });
+});
+
+// @desc    Complete a course
+// @route   POST /api/courses/:id/complete
+// @access  Private (Enrolled users)
+const completeCourse = asyncHandler(async (req, res) => {
+  const course = await Course.findById(req.params.id);
+
+  if (!course) {
+    return res.status(404).json({
+      success: false,
+      message: "Course not found"
+    });
+  }
+
+  const enrollment = course.enrolledUsers.find(
+    e => e.user.toString() === req.user._id.toString()
+  );
+
+  if (!enrollment) {
+    return res.status(400).json({
+      success: false,
+      message: "Not enrolled in this course"
+    });
+  }
+
+  enrollment.completed = true;
+  await course.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Course completed successfully"
+  });
+});
+
+// @desc    Rate a course
+// @route   POST /api/courses/:id/rate
+// @access  Private (Enrolled users)
+const rateCourse = asyncHandler(async (req, res) => {
+  const { rating } = req.body;
+
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({
+      success: false,
+      message: "Rating must be between 1 and 5"
+    });
+  }
+
+  const course = await Course.findById(req.params.id);
+
+  if (!course) {
+    return res.status(404).json({
+      success: false,
+      message: "Course not found"
+    });
+  }
+
+  const enrollment = course.enrolledUsers.find(
+    e => e.user.toString() === req.user._id.toString()
+  );
+
+  if (!enrollment) {
+    return res.status(400).json({
+      success: false,
+      message: "Not enrolled in this course"
+    });
+  }
+
+  enrollment.rating = rating;
+  await course.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Course rated successfully"
+  });
+});
+
 module.exports = {
   getAllCourses,
   getCourse,
@@ -273,5 +381,9 @@ module.exports = {
   deleteCourse,
   enrollInCourse,
   updateProgress,
-  getCourseMeta
+  getCourseMeta,
+  getCourseStats,
+  getMyCourses,
+  completeCourse,
+  rateCourse
 };

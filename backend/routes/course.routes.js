@@ -6,7 +6,7 @@ const c = require("../controllers/course.controller");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 // Public/Private routes
-router.get("/", protect, getAllCourses);
+router.get("/", protect, c.getAllCourses);
 
 // Admin/Instructor routes
 router.post("/", protect, c.createCourse);

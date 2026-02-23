@@ -152,4 +152,48 @@ exports.getTeamAchievements = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: items });
 });
 
+// PATCH /api/achievements/:id/verify
+exports.verifyAchievement = asyncHandler(async (req, res) => {
+  const ach = await Achievement.findById(req.params.id);
+  if (!ach) return res.status(404).json({ success: false, message: "Achievement not found" });
+
+  ach.isActive = !ach.isActive;
+  await ach.save();
+
+  res.status(200).json({ success: true, data: ach });
+});
+
+// POST /api/achievements/:id/like
+exports.toggleLike = asyncHandler(async (req, res) => {
+  // Placeholder: implement like toggle
+  res.status(200).json({ success: true, message: "Like toggled" });
+});
+
+// POST /api/achievements/:id/comment
+exports.addComment = asyncHandler(async (req, res) => {
+  // Placeholder: implement add comment
+  res.status(200).json({ success: true, message: "Comment added" });
+});
+
+// GET /api/achievements/:id/comments
+exports.getComments = asyncHandler(async (req, res) => {
+  // Placeholder: implement get comments
+  res.status(200).json({ success: true, data: [] });
+});
+
+// GET /api/achievements/stats
+exports.getAchievementStats = asyncHandler(async (req, res) => {
+  const total = await Achievement.countDocuments();
+  const active = await Achievement.countDocuments({ isActive: true });
+  const team = await Achievement.countDocuments({ isTeamAchievement: true });
+
+  res.status(200).json({ success: true, data: { total, active, team } });
+});
+
+// GET /api/achievements/leaderboard
+exports.getLeaderboard = asyncHandler(async (req, res) => {
+  // Placeholder: implement leaderboard
+  res.status(200).json({ success: true, data: [] });
+});
+
 // Additional utility endpoints (stats, leaderboard) can be added here as needed

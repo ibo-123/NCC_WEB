@@ -82,6 +82,11 @@ const courseSchema = new mongoose.Schema({
     completed: {
       type: Boolean,
       default: false
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5
     }
   }],
 
