@@ -102,13 +102,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {courses.slice(0, 3).map((course) => (
+              {Array.isArray(courses) && courses.slice(0, 3).map((course) => (
                 <div key={course._id || course.id} className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
                   <p className="font-medium">{course.title}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{course.description}</p>
                 </div>
               ))}
-              {courses.length === 0 && (
+              {(!Array.isArray(courses) || courses.length === 0) && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">No courses yet</p>
               )}
             </div>
@@ -129,13 +129,13 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {events.slice(0, 3).map((event) => (
+              {Array.isArray(events) && events.slice(0, 3).map((event) => (
                 <div key={event._id || event.id} className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
                   <p className="font-medium">{event.title}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{event.date}</p>
                 </div>
               ))}
-              {events.length === 0 && (
+              {(!Array.isArray(events) || events.length === 0) && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">No events yet</p>
               )}
             </div>

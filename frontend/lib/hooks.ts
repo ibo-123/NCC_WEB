@@ -21,7 +21,8 @@ export function useCourses() {
     const fetchCourses = async () => {
       try {
         const data = await apiClient.get<Course[]>('/courses');
-        setCourses(data);
+        // ensure response is an array before updating state
+        setCourses(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch courses');
@@ -82,7 +83,7 @@ export function useEvents() {
     const fetchEvents = async () => {
       try {
         const data = await apiClient.get<Event[]>('/events');
-        setEvents(data);
+        setEvents(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch events');
