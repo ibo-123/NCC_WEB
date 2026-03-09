@@ -335,6 +335,36 @@ exports.getAdminDashboard = async (req, res) => {
 };
 
 
+// combined statistics endpoint used by frontend hooks
+// returns overall counts (users, courses, events, achievements)
+// additional details can be fetched via other endpoints
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const [totalUsers, totalCourses, totalEvents, totalAchievements] = await Promise.all([
+      User.countDocuments(),
+      Course.countDocuments(),
+      Event.countDocuments(),
+      Achievement.countDocuments()
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalCourses,
+        totalEvents,
+        totalAchievements
+      }
+    });
+  } catch (error) {
+    console.error('Get dashboard stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch dashboard statistics'
+    });
+  }
+};
+
 // @desc    Get user dashboard statistics
 // @route   GET /api/dashboard/user
 // @access  Private

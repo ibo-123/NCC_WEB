@@ -163,6 +163,28 @@ userSchema.virtual("fullName").get(function() {
   return this.name;
 });
 
+// Virtuals for compatibility with frontend shape
+userSchema.virtual('firstName').get(function() {
+  if (!this.name) return '';
+  return this.name.split(' ')[0] || '';
+});
+
+userSchema.virtual('lastName').get(function() {
+  if (!this.name) return '';
+  const parts = this.name.split(' ');
+  return parts.slice(1).join(' ') || '';
+});
+
+userSchema.virtual('username').get(function() {
+  if (this.studentId) {
+    return this.studentId.toLowerCase();
+  }
+  if (this.email) {
+    return this.email.split('@')[0];
+  }
+  return '';
+});
+
 // Indexes for better query performance
 // userSchema.index({ email });
 // userSchema.index({ studentId: 1 });

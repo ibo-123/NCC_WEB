@@ -15,19 +15,47 @@ const generateToken = (id, role) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, studentId, department, year } = req.body;
+    // Accept either a full `name` or split pieces that some UIs submit.
+    // Also allow a `username` field which we can use as studentId fallback.
+    const {
+      name,
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      studentId,
+      department,
+      year,
+    } = req.body;
 
-    // Validate required fields
-    if (!name || !email || !password || !studentId || !department || !year) {
+    // derive values and apply sensible defaults
+    const derivedName =
+      name ||
+      [firstName, lastName].filter(Boolean).join(" ") ||
+      username ||
+      email ||
+      "";
+
+    const derivedStudentId =
+      studentId || username || (email ? email.split("@")[0] : "");
+
+    const derivedDepartment = department || "Unknown";
+    const derivedYear = year || "First Year";
+
+    // Validate required fields (backend still enforces these exist after
+    // derivation).  Email and password are mandatory, name/studentId may be
+    // computed but should not be empty.
+    if (!derivedName || !email || !password || !derivedStudentId) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields"
       });
     }
 
-    // Check if user already exists
+    // Check if user already exists (look up by email or student id)
     const existingUser = await User.findOne({
-      $or: [{ email }, { studentId }]
+      $or: [{ email }, { studentId: derivedStudentId }]
     });
 
     if (existingUser) {
@@ -39,14 +67,14 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user record with computed/fallback values
     const user = await User.create({
-      name,
+      name: derivedName,
       email,
       password,
-      studentId,
-      department,
-      year,
+      studentId: derivedStudentId,
+      department: derivedDepartment,
+      year: derivedYear,
       role: "member",
       status: "Active"
     });
@@ -74,15 +102,25 @@ exports.register = async (req, res) => {
       userAgent: req.get("user-agent")
     });
 
+    // build response user object including fields frontend expects
+    const responseUser = {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      studentId: user.studentId,
+      department: user.department,
+      role: user.role
+    };
+
     res.status(201).json({
       success: true,
       message: "Registration successful",
       data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        studentId: user.studentId,
-        role: user.role,
+        user: responseUser,
         token
       }
     });
@@ -171,16 +209,24 @@ exports.login = async (req, res) => {
       userAgent: req.get("user-agent")
     });
 
+    const responseUser = {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      studentId: user.studentId,
+      department: user.department,
+      role: user.role
+    };
+
     res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        studentId: user.studentId,
-        department: user.department,
-        role: user.role,
+        user: responseUser,
         token
       }
     });

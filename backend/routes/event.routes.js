@@ -6,12 +6,18 @@ const {
   getEvent,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  registerForEvent,
+  checkInToEvent
 } = require("../controllers/event.controller");
 
 // Public routes
 router.get("/", getEvents);
 router.get("/:id", getEvent);
+
+// Protected routes (user actions)
+router.post("/:id/register", protect, registerForEvent);
+router.post("/:id/checkin", protect, checkInToEvent);
 
 // Protected routes (admin only)
 router.post("/", protect, authorize("admin"), createEvent);
