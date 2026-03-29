@@ -1,6 +1,6 @@
-# 🚀 NCC_MSJ — Full-Stack Club Management Platform
+# 🚀 Competitive Programmers Tracker Platform
 
-> **NCC_MSJ** is a modern, secure, and scalable **full-stack web platform** designed to manage a university tech club ecosystem — including **members, attendance, achievements, courses, and admin operations** — all in one professional system.
+> **Competitive Programmers Tracker** is a modern, secure, and scalable **full-stack web platform** designed to manage competitive programming activities, events, and learning resources for users and teams.
 
 Built with **Node.js, Express, MongoDB, and Next.js**, this platform follows **industry-grade architecture** and **security best practices** used in real SaaS products.
 
@@ -16,9 +16,9 @@ Built with **Node.js, Express, MongoDB, and Next.js**, this platform follows **i
 - Protected API routes
 - Secure environment variables
 
-### 👥 Member Management
+### 👥 User Management
 
-- View and manage club members
+- View and manage platform users
 - Update user profiles
 - Delete users (Admin only)
 - Role enforcement system
@@ -26,18 +26,18 @@ Built with **Node.js, Express, MongoDB, and Next.js**, this platform follows **i
 ### 📊 Smart Dashboard
 
 - Personalized user dashboard
-- Attendance percentage calculation
+- Contest participation tracking
 - Achievement tracking
 - Secure user data display
 
-### 📝 Attendance System
+### 🏆 Contest System
 
-- Event-based attendance tracking
-- Duplicate attendance prevention
-- Admin-controlled marking
-- Attendance analytics
+- Contest-based event tracking
+- Duplicate registration prevention
+- Admin-controlled contest creation
+- Contest analytics
 
-### 🏆 Achievements System
+### 🏅 Achievements System
 
 - Admin-controlled achievement creation
 - User-based achievement viewing
@@ -46,7 +46,7 @@ Built with **Node.js, Express, MongoDB, and Next.js**, this platform follows **i
 ### 📚 Course Platform
 
 - Add, update, and delete courses (Admin)
-- Learning resources system
+- Programming learning resources system
 - Course difficulty levels:
   - Beginner
   - Intermediate

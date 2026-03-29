@@ -47,10 +47,22 @@ export interface Course {
   id?: string;
   title: string;
   description: string;
-  instructor?: User;
+  category?: string;
+  difficulty?: string;
+  videoType?: "youtube" | "upload";
+  videoUrl?: string;
+  videoFile?: string;
+  materials?: {
+    title: string;
+    type: "pdf" | "ppt" | "doc" | "link" | "other";
+    url: string;
+    description?: string;
+  }[];
+  instructor?: User | string;
   instructorId?: string;
-  participants?: User[] | string[];
+  enrolledUsers?: Array<{ user: User | string }>;    
   enrolledCount?: number;
+  createdBy?: User | string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,20 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { useEvents } from '@/lib/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Calendar, ArrowLeft, Users, MapPin } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { useEvents } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Calendar, ArrowLeft, Users, MapPin } from "lucide-react";
 
 export default function AdminEventsPage() {
   const { user } = useAuth();
   const { events, loading } = useEvents();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== "admin") {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 text-lg font-semibold">
@@ -35,9 +41,10 @@ export default function AdminEventsPage() {
     );
   }
 
-  const filteredEvents = events.filter((e) =>
-    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEvents = events.filter(
+    (e) =>
+      e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -55,7 +62,7 @@ export default function AdminEventsPage() {
           Event Management
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">
-          Organize and manage NCC events
+          Organize and manage programming contests and events
         </p>
       </div>
 
@@ -66,7 +73,9 @@ export default function AdminEventsPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1"
         />
-        <Button>Create Event</Button>
+        <Link href="/admin/events/create">
+          <Button>Create Event</Button>
+        </Link>
       </div>
 
       <div className="grid gap-6">
@@ -86,16 +95,22 @@ export default function AdminEventsPage() {
             <CardContent>
               <div className="grid md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Date</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Date
+                  </p>
                   <p className="text-sm mt-1">{event.date}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Time</p>
-                  <p className="text-sm mt-1">{event.time || 'TBD'}</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Time
+                  </p>
+                  <p className="text-sm mt-1">{event.time || "TBD"}</p>
                 </div>
                 {event.location && (
                   <div>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Location</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      Location
+                    </p>
                     <p className="text-sm mt-1 flex items-center gap-1">
                       <MapPin size={14} />
                       {event.location}
@@ -103,8 +118,12 @@ export default function AdminEventsPage() {
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Registrations</p>
-                  <p className="text-sm mt-1">{event.registeredCount || 0} registered</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Registrations
+                  </p>
+                  <p className="text-sm mt-1">
+                    {event.registeredCount || 0} registered
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
@@ -130,7 +149,9 @@ export default function AdminEventsPage() {
         <Card>
           <CardContent className="pt-12 text-center">
             <p className="text-slate-600 dark:text-slate-400">
-              {searchTerm ? 'No events match your search' : 'No events created yet'}
+              {searchTerm
+                ? "No events match your search"
+                : "No events created yet"}
             </p>
           </CardContent>
         </Card>

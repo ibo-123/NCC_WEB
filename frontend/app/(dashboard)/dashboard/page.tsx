@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { useDashboardStats, useCourses, useEvents } from '@/lib/hooks';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BookOpen, Calendar, Award, Users } from 'lucide-react';
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { useDashboardStats, useCourses, useEvents } from "@/lib/hooks";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Calendar, Award, Users } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -34,7 +40,7 @@ export default function DashboardPage() {
           Welcome back, {user?.firstName}! 👋
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">
-          Here's what's happening in your NCC portal today.
+          Here's what's happening in your competitive programming journey today.
         </p>
       </div>
 
@@ -84,7 +90,9 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalAchievements || 0}</div>
+            <div className="text-2xl font-bold">
+              {stats?.totalAchievements || 0}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -102,18 +110,28 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Array.isArray(courses) && courses.slice(0, 3).map((course) => (
-                <div key={course._id || course.id} className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
-                  <p className="font-medium">{course.title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{course.description}</p>
-                </div>
-              ))}
+              {Array.isArray(courses) &&
+                courses.slice(0, 3).map((course) => (
+                  <div
+                    key={course._id || course.id}
+                    className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+                  >
+                    <p className="font-medium">{course.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {course.description}
+                    </p>
+                  </div>
+                ))}
               {(!Array.isArray(courses) || courses.length === 0) && (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No courses yet</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No courses yet
+                </p>
               )}
             </div>
             <Link href="/courses" className="block mt-4">
-              <Button variant="outline" className="w-full">View All Courses</Button>
+              <Button variant="outline" className="w-full">
+                View All Courses
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -129,18 +147,28 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Array.isArray(events) && events.slice(0, 3).map((event) => (
-                <div key={event._id || event.id} className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
-                  <p className="font-medium">{event.title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{event.date}</p>
-                </div>
-              ))}
+              {Array.isArray(events) &&
+                events.slice(0, 3).map((event) => (
+                  <div
+                    key={event._id || event.id}
+                    className="text-sm p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+                  >
+                    <p className="font-medium">{event.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {event.date}
+                    </p>
+                  </div>
+                ))}
               {(!Array.isArray(events) || events.length === 0) && (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No events yet</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No events yet
+                </p>
               )}
             </div>
             <Link href="/events" className="block mt-4">
-              <Button variant="outline" className="w-full">View All Events</Button>
+              <Button variant="outline" className="w-full">
+                View All Events
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -156,13 +184,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <Link href="/profile">
-              <Button variant="outline" className="w-full justify-start">Edit Profile</Button>
+              <Button variant="outline" className="w-full justify-start">
+                Edit Profile
+              </Button>
             </Link>
             <Link href="/achievements">
-              <Button variant="outline" className="w-full justify-start">View Achievements</Button>
+              <Button variant="outline" className="w-full justify-start">
+                View Achievements
+              </Button>
             </Link>
             <Link href="/events">
-              <Button variant="outline" className="w-full justify-start">Register for Event</Button>
+              <Button variant="outline" className="w-full justify-start">
+                Register for Event
+              </Button>
             </Link>
           </CardContent>
         </Card>

@@ -54,6 +54,27 @@ const courseSchema = new mongoose.Schema({
     }
   },
 
+  materials: [{
+    title: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    type: {
+      type: String,
+      enum: ["pdf", "ppt", "doc", "link", "other"],
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      trim: true
+    }
+  }],
+
   duration: {
     type: Number, // in minutes
     default: 0

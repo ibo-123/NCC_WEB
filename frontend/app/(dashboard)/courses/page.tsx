@@ -1,34 +1,41 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useCourses } from '@/lib/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { BookOpen, Users } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { useCourses } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { BookOpen, Users } from "lucide-react";
 
 export default function CoursesPage() {
   const { courses, loading, enrollCourse } = useCourses();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
-  const filteredCourses = courses.filter((course) =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleEnroll = async (courseId: string) => {
     setEnrollingId(courseId);
-    setMessage('');
+    setMessage("");
 
     try {
       await enrollCourse(courseId);
-      setMessage('Successfully enrolled in course!');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage("Successfully enrolled in course!");
+      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Failed to enroll');
+      setMessage(error instanceof Error ? error.message : "Failed to enroll");
     } finally {
       setEnrollingId(null);
     }
@@ -53,16 +60,16 @@ export default function CoursesPage() {
           Courses
         </h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">
-          Browse and enroll in available training courses
+          Browse and enroll in available programming courses
         </p>
       </div>
 
       {message && (
         <div
           className={`p-4 rounded-lg border ${
-            message.includes('Successfully')
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+            message.includes("Successfully")
+              ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800"
+              : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
           }`}
         >
           {message}
@@ -83,7 +90,9 @@ export default function CoursesPage() {
           <CardContent className="pt-12 text-center">
             <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
             <p className="text-slate-600 dark:text-slate-400">
-              {searchTerm ? 'No courses match your search' : 'No courses available yet'}
+              {searchTerm
+                ? "No courses match your search"
+                : "No courses available yet"}
             </p>
           </CardContent>
         </Card>
@@ -93,24 +102,31 @@ export default function CoursesPage() {
             <Card key={course._id || course.id} className="flex flex-col">
               <CardHeader>
                 <CardTitle className="line-clamp-2">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-3">{course.description}</CardDescription>
+                <CardDescription className="line-clamp-3">
+                  {course.description}
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
                   <Users size={16} />
                   <span>{course.enrolledCount || 0} enrolled</span>
                 </div>
-                <Link href={`/courses/${course._id || course.id}`} className="block">
+                <Link
+                  href={`/courses/${course._id || course.id}`}
+                  className="block"
+                >
                   <Button className="w-full mb-2" variant="outline">
                     View Details
                   </Button>
                 </Link>
                 <Button
-                  onClick={() => handleEnroll(course._id || course.id || '')}
+                  onClick={() => handleEnroll(course._id || course.id || "")}
                   disabled={enrollingId === (course._id || course.id)}
                   className="w-full"
                 >
-                  {enrollingId === (course._id || course.id) ? 'Enrolling...' : 'Enroll Now'}
+                  {enrollingId === (course._id || course.id)
+                    ? "Enrolling..."
+                    : "Enroll Now"}
                 </Button>
               </CardContent>
             </Card>

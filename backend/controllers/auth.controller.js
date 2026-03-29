@@ -67,6 +67,12 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Determine role (allow assignment when bootstrapping / trusted flow).
+    // Note TODO: in production, this should be managed by admin-only endpoint to avoid privilege escalation.
+    const requestedRole = req.body.role;
+    const allowedRoles = ["admin", "president", "vice-president", "lecturer", "member"];
+    const resolvedRole = allowedRoles.includes(requestedRole) ? requestedRole : "member";
+
     // Create user record with computed/fallback values
     const user = await User.create({
       name: derivedName,
@@ -75,7 +81,7 @@ exports.register = async (req, res) => {
       studentId: derivedStudentId,
       department: derivedDepartment,
       year: derivedYear,
-      role: "member",
+      role: resolvedRole,
       status: "Active"
     });
 
@@ -235,6 +241,64 @@ exports.login = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Login failed"
+    });
+  }
+};
+
+// @desc    Refresh JWT token
+// @route   POST /api/auth/refresh
+// @access  Public (token may be expired)
+exports.refreshToken = async (req, res) => {
+  try {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies?.token) {
+      token = req.cookies.token;
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token is required to refresh authentication"
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET, {
+        ignoreExpiration: true
+      });
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token"
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user || user.status !== "Active") {
+      return res.status(401).json({
+        success: false,
+        message: "User not authorized"
+      });
+    }
+
+    const newToken = generateToken(user._id, user.role);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed",
+      data: { token: newToken }
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Could not refresh token"
     });
   }
 };

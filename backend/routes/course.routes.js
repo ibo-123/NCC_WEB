@@ -3,18 +3,18 @@
 
 const router = require("express").Router();
 const c = require("../controllers/course.controller");
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Public/Private routes
 router.get("/", protect, c.getAllCourses);
 
 // Admin/Instructor routes
-router.post("/", protect, c.createCourse);
+router.post("/", protect, authorize("admin", "president", "vice-president", "lecturer"), c.createCourse);
 router.put("/:id", protect, c.updateCourse);
 router.delete("/:id", protect, c.deleteCourse);
 
 // User/Admin routes
-router.get("/stats", protect, adminOnly, c.getCourseStats);
+router.get("/stats", protect, authorize("admin"), c.getCourseStats);
 router.get("/my-courses", protect, c.getMyCourses);
 
 // Routes with dynamic :id (must come last)

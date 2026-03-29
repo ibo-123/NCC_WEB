@@ -1,20 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { useCourses } from '@/lib/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { BookOpen, ArrowLeft, Users } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { useCourses } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { BookOpen, ArrowLeft, Users } from "lucide-react";
 
 export default function AdminCoursesPage() {
   const { user } = useAuth();
   const { courses, loading } = useCourses();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== "admin") {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 text-lg font-semibold">
@@ -35,9 +41,10 @@ export default function AdminCoursesPage() {
     );
   }
 
-  const filteredCourses = courses.filter((c) =>
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCourses = courses.filter(
+    (c) =>
+      c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -66,7 +73,9 @@ export default function AdminCoursesPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1"
         />
-        <Button>Create Course</Button>
+        <Link href="/admin/courses/create">
+          <Button>Create Course</Button>
+        </Link>
       </div>
 
       <div className="grid gap-6">
@@ -85,23 +94,33 @@ export default function AdminCoursesPage() {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Instructor</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Instructor
+                  </p>
                   <p className="text-sm mt-1">
-                    {typeof course.instructor === 'string'
+                    {typeof course.instructor === "string"
                       ? course.instructor
                       : course.instructor
-                      ? `${course.instructor.firstName} ${course.instructor.lastName}`
-                      : 'Not assigned'}
+                        ? `${course.instructor.firstName} ${course.instructor.lastName}`
+                        : "Not assigned"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Enrolled</p>
-                  <p className="text-sm mt-1">{course.enrolledCount || 0} participants</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Enrolled
+                  </p>
+                  <p className="text-sm mt-1">
+                    {course.enrolledCount || 0} participants
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Created</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Created
+                  </p>
                   <p className="text-sm mt-1">
-                    {course.createdAt ? new Date(course.createdAt).toLocaleDateString() : 'N/A'}
+                    {course.createdAt
+                      ? new Date(course.createdAt).toLocaleDateString()
+                      : "N/A"}
                   </p>
                 </div>
               </div>
@@ -125,7 +144,9 @@ export default function AdminCoursesPage() {
         <Card>
           <CardContent className="pt-12 text-center">
             <p className="text-slate-600 dark:text-slate-400">
-              {searchTerm ? 'No courses match your search' : 'No courses created yet'}
+              {searchTerm
+                ? "No courses match your search"
+                : "No courses created yet"}
             </p>
           </CardContent>
         </Card>

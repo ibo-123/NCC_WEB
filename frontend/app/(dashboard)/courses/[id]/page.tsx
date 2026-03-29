@@ -1,13 +1,25 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useCourseDetail } from '@/lib/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Users, ArrowLeft } from 'lucide-react';
+import Link from "next/link";
+import { use } from "react";
+import { useCourseDetail } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BookOpen, Users, ArrowLeft } from "lucide-react";
 
-export default function CourseDetailPage({ params }: { params: { id: string } }) {
-  const { course, loading, error } = useCourseDetail(params.id);
+export default function CourseDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+  const { course, loading, error } = useCourseDetail(resolvedParams.id);
 
   if (loading) {
     return (
@@ -31,7 +43,9 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
         </Link>
         <Card>
           <CardContent className="pt-12 text-center">
-            <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Course not found'}</p>
+            <p className="text-red-600 dark:text-red-400 mb-4">
+              {error || "Course not found"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -52,7 +66,9 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           <BookOpen className="w-10 h-10" />
           {course.title}
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-lg">{course.description}</p>
+        <p className="text-slate-600 dark:text-slate-400 text-lg">
+          {course.description}
+        </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -64,8 +80,12 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{course.enrolledCount || 0}</div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">participants</p>
+            <div className="text-3xl font-bold">
+              {course.enrolledCount || 0}
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              participants
+            </p>
           </CardContent>
         </Card>
 
@@ -75,11 +95,11 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent>
             <div className="text-lg font-semibold">
-              {typeof course.instructor === 'string'
-                ? 'Loading...'
+              {typeof course.instructor === "string"
+                ? "Loading..."
                 : course.instructor
-                ? `${course.instructor.firstName} ${course.instructor.lastName}`
-                : 'Not assigned'}
+                  ? `${course.instructor.firstName} ${course.instructor.lastName}`
+                  : "Not assigned"}
             </div>
           </CardContent>
         </Card>
@@ -99,34 +119,79 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
 
       <Card>
         <CardHeader>
-          <CardTitle>Course Information</CardTitle>
-          <CardDescription>Details about this course</CardDescription>
+          <CardTitle>Course Content</CardTitle>
+          <CardDescription>
+            Video lecture and learning materials
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-slate-700 dark:text-slate-300">{course.description}</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">Created</h3>
-            <p className="text-slate-700 dark:text-slate-300">
-              {course.createdAt ? new Date(course.createdAt).toLocaleDateString() : 'N/A'}
-            </p>
-          </div>
-
-          {course.participants && Array.isArray(course.participants) && course.participants.length > 0 && (
+        <CardContent className="space-y-6">
+          {/* Video Section */}
+          {course.videoType === "youtube" && course.videoUrl && (
             <div>
-              <h3 className="font-semibold mb-2">Recent Participants</h3>
-              <div className="space-y-2">
-                {course.participants.slice(0, 5).map((participant: any, idx: number) => (
-                  <div key={idx} className="text-sm text-slate-700 dark:text-slate-300">
-                    {typeof participant === 'string' ? participant : `${participant.firstName} ${participant.lastName}`}
+              <h3 className="font-semibold mb-3">Video Lecture</h3>
+              <div className="aspect-video">
+                <iframe
+                  src={`https://www.youtube.com/embed/${course.videoUrl.includes("v=") ? new URL(course.videoUrl).searchParams.get("v") : course.videoUrl.split("/").pop()}`}
+                  className="w-full h-full rounded-lg"
+                  allowFullScreen
+                  title={course.title}
+                />
+              </div>
+            </div>
+          )}
+
+          {course.videoType === "upload" && course.videoFile && (
+            <div>
+              <h3 className="font-semibold mb-3">Video Lecture</h3>
+              <video controls className="w-full rounded-lg max-h-[500px]">
+                <source src={course.videoFile} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+
+          {/* Materials Section */}
+          {course.materials && course.materials.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3">Learning Materials</h3>
+              <div className="space-y-3">
+                {course.materials.map((material: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{material.title}</p>
+                        {material.description && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {material.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(material.url, "_blank")}
+                    >
+                      {material.type === "link" ? "Open Link" : "Download"}
+                    </Button>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {!course.videoUrl &&
+            (!course.materials || course.materials.length === 0) && (
+              <p className="text-slate-600 dark:text-slate-400 text-center py-8">
+                No course content available yet.
+              </p>
+            )}
         </CardContent>
       </Card>
     </div>

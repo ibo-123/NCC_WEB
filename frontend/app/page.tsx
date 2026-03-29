@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Calendar, Award, Users } from 'lucide-react';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BookOpen, Calendar, Award, Users } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { isAuthenticated, loading } = useAuth();
@@ -14,7 +20,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [isAuthenticated, loading, router]);
 
@@ -36,9 +42,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
           <div className="flex items-center space-x-2 font-bold text-lg">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">
-              NCC
+              CPT
             </div>
-            <span>NCC Portal</span>
+            <span>Competitive Programmers Tracker</span>
           </div>
           <div className="space-x-4">
             <Link href="/login">
@@ -55,10 +61,12 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-20">
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-            Welcome to NCC Portal
+            Welcome to Competitive Programmers Tracker
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
-            A comprehensive platform for National Cadet Corps members to manage courses, events, and achievements all in one place.
+            A comprehensive platform for competitive programming enthusiasts to
+            track contests, access learning resources, and connect with the
+            community.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/register">
@@ -81,7 +89,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Access training courses and materials to enhance your skills and knowledge.
+                Access programming courses and tutorials to enhance your
+                competitive coding skills.
               </CardDescription>
             </CardContent>
           </Card>
@@ -89,11 +98,12 @@ export default function HomePage() {
           <Card>
             <CardHeader className="pb-3">
               <Calendar className="w-8 h-8 text-green-600 mb-2" />
-              <CardTitle>Events</CardTitle>
+              <CardTitle>Contests</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Stay updated with upcoming events and register for those that interest you.
+                Stay updated with upcoming programming contests and coding
+                challenges.
               </CardDescription>
             </CardContent>
           </Card>
@@ -105,7 +115,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Track your accomplishments and see your progress within the organization.
+                Track your contest performances and showcase your programming
+                achievements.
               </CardDescription>
             </CardContent>
           </Card>
@@ -117,7 +128,7 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Connect with other cadets and instructors in the NCC community.
+                Connect with fellow competitive programmers and share knowledge.
               </CardDescription>
             </CardContent>
           </Card>
@@ -127,7 +138,9 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-slate-600 dark:text-slate-400">
-          <p>&copy; 2024 NCC Portal. All rights reserved.</p>
+          <p>
+            &copy; 2024 Competitive Programmers Tracker. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

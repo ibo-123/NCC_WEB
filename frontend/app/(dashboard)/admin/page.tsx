@@ -1,26 +1,57 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/lib/auth-context';
-import { useDashboardStats, useUsers, useCourses, useEvents, useAchievements } from '@/lib/hooks';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Settings, Users, BookOpen, Calendar, Award } from 'lucide-react';
+import { useAuth } from "@/lib/auth-context";
+import {
+  useDashboardStats,
+  useUsers,
+  useCourses,
+  useEvents,
+  useAchievements,
+} from "@/lib/hooks";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Settings, Users, BookOpen, Calendar, Award } from "lucide-react";
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const { stats } = useDashboardStats();
   const { users } = useUsers();
   const { courses } = useCourses();
   const { events } = useEvents();
   const { achievements } = useAchievements();
 
-  if (user?.role !== 'admin') {
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-600 dark:text-slate-300 text-lg">
+          Loading user...
+        </p>
+      </div>
+    );
+  }
+
+  if (user.role !== "admin") {
+    // If user is not admin, redirect to dashboard and show guard message
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 0);
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 text-lg font-semibold">
-          You don't have permission to access this page
+          You do not have permission to access the admin area.
         </p>
+        <Link href="/dashboard">
+          <Button className="mt-4">Return to Dashboard</Button>
+        </Link>
       </div>
     );
   }
@@ -116,13 +147,16 @@ export default function AdminPage() {
                 <span className="font-medium">Total Users:</span> {users.length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Admins:</span> {users.filter((u) => u.role === 'admin').length}
+                <span className="font-medium">Admins:</span>{" "}
+                {users.filter((u) => u.role === "admin").length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Instructors:</span> {users.filter((u) => u.role === 'instructor').length}
+                <span className="font-medium">Instructors:</span>{" "}
+                {users.filter((u) => u.role === "instructor").length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Cadets:</span> {users.filter((u) => u.role === 'user').length}
+                <span className="font-medium">Cadets:</span>{" "}
+                {users.filter((u) => u.role === "user").length}
               </div>
             </div>
             <Link href="/admin/users">
@@ -142,10 +176,11 @@ export default function AdminPage() {
           <CardContent>
             <div className="space-y-3 mb-4">
               <div className="text-sm">
-                <span className="font-medium">Total Courses:</span> {courses.length}
+                <span className="font-medium">Total Courses:</span>{" "}
+                {courses.length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Total Enrollments:</span>{' '}
+                <span className="font-medium">Total Enrollments:</span>{" "}
                 {courses.reduce((sum, c) => sum + (c.enrolledCount || 0), 0)}
               </div>
             </div>
@@ -166,10 +201,11 @@ export default function AdminPage() {
           <CardContent>
             <div className="space-y-3 mb-4">
               <div className="text-sm">
-                <span className="font-medium">Total Events:</span> {events.length}
+                <span className="font-medium">Total Events:</span>{" "}
+                {events.length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Total Registrations:</span>{' '}
+                <span className="font-medium">Total Registrations:</span>{" "}
                 {events.reduce((sum, e) => sum + (e.registeredCount || 0), 0)}
               </div>
             </div>
@@ -190,11 +226,16 @@ export default function AdminPage() {
           <CardContent>
             <div className="space-y-3 mb-4">
               <div className="text-sm">
-                <span className="font-medium">Total Achievements:</span> {achievements.length}
+                <span className="font-medium">Total Achievements:</span>{" "}
+                {achievements.length}
               </div>
               <div className="text-sm">
-                <span className="font-medium">Total Awards:</span>{' '}
-                {achievements.reduce((sum, a) => sum + (Array.isArray(a.awardedTo) ? a.awardedTo.length : 0), 0)}
+                <span className="font-medium">Total Awards:</span>{" "}
+                {achievements.reduce(
+                  (sum, a) =>
+                    sum + (Array.isArray(a.awardedTo) ? a.awardedTo.length : 0),
+                  0,
+                )}
               </div>
             </div>
             <Link href="/admin/achievements">

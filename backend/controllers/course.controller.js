@@ -35,13 +35,19 @@ const getAllCourses = asyncHandler(async (req, res) => {
 
   const count = await Course.countDocuments(query);
 
+  const courseData = courses.map((course) => {
+    const obj = course.toObject();
+    obj.enrolledCount = Array.isArray(obj.enrolledUsers) ? obj.enrolledUsers.length : 0;
+    return obj;
+  });
+
   res.status(200).json({
     success: true,
-    count: courses.length,
+    count: courseData.length,
     total: count,
     totalPages: Math.ceil(count / limit),
     currentPage: page,
-    courses
+    courses: courseData
   });
 });
 
@@ -64,9 +70,12 @@ const getCourse = asyncHandler(async (req, res) => {
   // Increment views
   await Course.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
 
+  const result = course.toObject();
+  result.enrolledCount = Array.isArray(result.enrolledUsers) ? result.enrolledUsers.length : 0;
+
   res.status(200).json({
     success: true,
-    course
+    course: result
   });
 });
 
@@ -74,25 +83,56 @@ const getCourse = asyncHandler(async (req, res) => {
 // @route   POST /api/courses
 // @access  Private (Admin, President, Vice President, Lecturer)
 const createCourse = asyncHandler(async (req, res) => {
-  const { title, description, category, difficulty, videoType, videoUrl, videoFile, duration, tags } = req.body;
+  const { title, description, category, difficulty, videoType, videoUrl, videoFile, materials, duration, tags } = req.body;
+
+  // Validation
+  if (!title || !description || !category || !videoType) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide all required fields: title, description, category, videoType"
+    });
+  }
+
+  if (videoType === "youtube" && !videoUrl) {
+    return res.status(400).json({
+      success: false,
+      message: "Video URL is required for YouTube videos"
+    });
+  }
+
+  if (videoType === "upload" && !videoFile) {
+    return res.status(400).json({
+      success: false,
+      message: "Video file is required for uploaded videos"
+    });
+  }
+
+  const userId = req.user?.id || req.user?._id;
 
   const course = await Course.create({
     title,
     description,
-    instructor: req.user._id,
+    instructor: userId,
     category,
     difficulty,
     videoType,
     videoUrl,
     videoFile,
+    materials,
     duration,
     tags,
-    createdBy: req.user._id
+    createdBy: userId
   });
+
+  // Populate the created course for response
+  const populatedCourse = await Course.findById(course._id)
+    .populate("instructor", "name profileImage")
+    .populate("createdBy", "name");
 
   res.status(201).json({
     success: true,
-    course
+    message: "Course created successfully",
+    course: populatedCourse
   });
 });
 

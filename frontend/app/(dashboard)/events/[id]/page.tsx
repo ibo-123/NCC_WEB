@@ -1,13 +1,25 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEventDetail } from '@/lib/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, MapPin, Users, Clock, ArrowLeft } from 'lucide-react';
+import Link from "next/link";
+import { use } from "react";
+import { useEventDetail } from "@/lib/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Calendar, MapPin, Users, Clock, ArrowLeft } from "lucide-react";
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { event, loading, error } = useEventDetail(params.id);
+export default function EventDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+  const { event, loading, error } = useEventDetail(resolvedParams.id);
 
   if (loading) {
     return (
@@ -31,7 +43,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         </Link>
         <Card>
           <CardContent className="pt-12 text-center">
-            <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Event not found'}</p>
+            <p className="text-red-600 dark:text-red-400 mb-4">
+              {error || "Event not found"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -52,7 +66,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           <Calendar className="w-10 h-10" />
           {event.title}
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-lg">{event.description}</p>
+        <p className="text-slate-600 dark:text-slate-400 text-lg">
+          {event.description}
+        </p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -76,7 +92,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{event.time || 'TBD'}</div>
+            <div className="text-lg font-semibold">{event.time || "TBD"}</div>
           </CardContent>
         </Card>
 
@@ -117,7 +133,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-700 dark:text-slate-300">{event.location}</p>
+            <p className="text-slate-700 dark:text-slate-300">
+              {event.location}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -130,24 +148,28 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         <CardContent className="space-y-4">
           <div>
             <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-slate-700 dark:text-slate-300">{event.description}</p>
+            <p className="text-slate-700 dark:text-slate-300">
+              {event.description}
+            </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-2">Created By</h3>
             <p className="text-slate-700 dark:text-slate-300">
-              {typeof event.createdBy === 'string'
+              {typeof event.createdBy === "string"
                 ? event.createdBy
                 : event.createdBy
-                ? `${event.createdBy.firstName} ${event.createdBy.lastName}`
-                : 'Not specified'}
+                  ? `${event.createdBy.firstName} ${event.createdBy.lastName}`
+                  : "Not specified"}
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-2">Created</h3>
             <p className="text-slate-700 dark:text-slate-300">
-              {event.createdAt ? new Date(event.createdAt).toLocaleDateString() : 'N/A'}
+              {event.createdAt
+                ? new Date(event.createdAt).toLocaleDateString()
+                : "N/A"}
             </p>
           </div>
         </CardContent>

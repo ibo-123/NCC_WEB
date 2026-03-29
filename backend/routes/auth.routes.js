@@ -49,6 +49,9 @@ router.get(
   authController.verifyEmail
 );
 
+// Refresh token
+router.post("/refresh", authController.refreshToken);
+
 /* =========================
    Protected Routes
 ========================= */

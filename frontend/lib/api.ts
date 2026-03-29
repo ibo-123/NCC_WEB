@@ -35,6 +35,35 @@ class ApiClient {
     return headers;
   }
 
+  private async refreshToken(): Promise<boolean> {
+    const token = this.getAuthToken();
+    if (!token) return false;
+
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const json = await response.json();
+      if (json?.data?.token) {
+        this.setAuthToken(json.data.token);
+        return true;
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
   private async handleResponse<T>(response: Response): Promise<T> {
     const json = await (async () => {
       try {
@@ -60,58 +89,53 @@ class ApiClient {
     return (json as T) || ({} as T);
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    // ensure endpoint begins with a slash so concatenation is safe
+  private async request<T>(method: string, endpoint: string, data?: unknown): Promise<T> {
     const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
+
+    const callApi = async () => {
+      return await fetch(`${this.baseUrl}${path}`, {
+        method,
+        headers: this.getHeaders(),
+        body: data ? JSON.stringify(data) : undefined,
+      });
+    };
+
+    let response = await callApi();
+
+    // Automatically try to refresh token once for expired tokens
+    if (response.status === 401) {
+      const body = await response.json().catch(() => null);
+      const message = (body && (body.message || body.error)) ?? '';
+
+      if (message.toLowerCase().includes('token has expired') || message.toLowerCase().includes('expired')) {
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          response = await callApi();
+        }
+      }
+    }
 
     return this.handleResponse<T>(response);
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>('GET', endpoint);
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<T> {
-    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    return this.handleResponse<T>(response);
+    return this.request<T>('POST', endpoint, data);
   }
 
   async put<T>(endpoint: string, data?: unknown): Promise<T> {
-    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'PUT',
-      headers: this.getHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    return this.handleResponse<T>(response);
+    return this.request<T>('PUT', endpoint, data);
   }
 
   async patch<T>(endpoint: string, data?: unknown): Promise<T> {
-    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'PATCH',
-      headers: this.getHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    return this.handleResponse<T>(response);
+    return this.request<T>('PATCH', endpoint, data);
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'DELETE',
-      headers: this.getHeaders(),
-    });
-
-    return this.handleResponse<T>(response);
+    return this.request<T>('DELETE', endpoint);
   }
 
   setAuthToken(token: string): void {
