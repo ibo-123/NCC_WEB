@@ -27,16 +27,19 @@ export default function EventsPage() {
   );
 
   const now = new Date();
-  const upcomingEvents = filteredEvents.filter(
-    (event) => new Date(event.startDate) > now,
-  );
-  const ongoingEvents = filteredEvents.filter(
-    (event) =>
-      new Date(event.startDate) <= now && new Date(event.endDate) >= now,
-  );
-  const previousEvents = filteredEvents.filter(
-    (event) => new Date(event.endDate) < now,
-  );
+  const upcomingEvents = filteredEvents.filter((event) => {
+    const start = event.startDate ? new Date(event.startDate) : null;
+    return start ? start > now : false;
+  });
+  const ongoingEvents = filteredEvents.filter((event) => {
+    const start = event.startDate ? new Date(event.startDate) : null;
+    const end = event.endDate ? new Date(event.endDate) : null;
+    return start && end ? start <= now && end >= now : false;
+  });
+  const previousEvents = filteredEvents.filter((event) => {
+    const end = event.endDate ? new Date(event.endDate) : null;
+    return end ? end < now : false;
+  });
 
   const handleRegister = async (eventId: string) => {
     setRegisteringId(eventId);
@@ -122,14 +125,24 @@ export default function EventsPage() {
                 <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} />
-                    <span>{event.date}</span>
+                    <span>
+                      {event.date ||
+                        (event.startDate
+                          ? new Date(event.startDate).toLocaleDateString()
+                          : "TBD")}
+                    </span>
                   </div>
-                  {event.time && (
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>{event.time}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} />
+                    <span>
+                      {event.time ||
+                        (event.startTime || event.endTime
+                          ? `${event.startTime || ""}${
+                              event.startTime && event.endTime ? " - " : ""
+                            }${event.endTime || ""}`
+                          : "TBD")}
+                    </span>
+                  </div>
                   {event.location && (
                     <div className="flex items-center gap-2">
                       <MapPin size={16} />
@@ -138,8 +151,18 @@ export default function EventsPage() {
                   )}
                   <div className="flex items-center gap-2">
                     <Users size={16} />
-                    <span>{event.registeredCount || 0} registered</span>
+                    <span>
+                      {(event.registeredCount ??
+                        (event.attendees ? event.attendees.length : 0)) ||
+                        0}{" "}
+                      registered
+                    </span>
                   </div>
+                  {event.status && (
+                    <div className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {event.status}
+                    </div>
+                  )}
                 </div>
                 <Link
                   href={`/events/${event._id || event.id}`}
@@ -151,12 +174,21 @@ export default function EventsPage() {
                 </Link>
                 <Button
                   onClick={() => handleRegister(event._id || event.id || "")}
-                  disabled={registeringId === (event._id || event.id)}
+                  disabled={
+                    registeringId === (event._id || event.id) ||
+                    (event.status ? event.status !== "Published" : false) ||
+                    event.isFull ||
+                    !(event._id || event.id)
+                  }
                   className="w-full"
                 >
                   {registeringId === (event._id || event.id)
                     ? "Registering..."
-                    : "Register Now"}
+                    : event.status && event.status !== "Published"
+                      ? "Not Available"
+                      : event.isFull
+                        ? "Event Full"
+                        : "Register Now"}
                 </Button>
               </CardContent>
             </Card>

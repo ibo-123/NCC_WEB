@@ -79,10 +79,17 @@ export interface Event {
   id?: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
+  startDate?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
   location?: string;
+  status?: string;
   registeredCount?: number;
+  attendees?: Array<{ user?: User | string }>;
+  isFull?: boolean;
   maxCapacity?: number;
   createdBy?: User;
   createdById?: string;
@@ -134,6 +141,63 @@ export interface DashboardStats {
   totalCourses: number;
   totalEvents: number;
   totalAchievements: number;
+}
+
+export interface DashboardUserProfile {
+  name: string;
+  email: string;
+  studentId?: string;
+  department?: string;
+  year?: string;
+  role: UserRole;
+}
+
+export interface SummaryItem {
+  title: string;
+  category: string;
+  date: string;
+}
+
+export interface EventSummary {
+  title: string;
+  date: string;
+  status?: string;
+  type?: string;
+}
+
+export interface CategoryCount {
+  name: string;
+  value: number;
+}
+
+export interface ChartPoint {
+  month: string;
+  value: number;
+}
+
+export interface UserDashboardStats {
+  profile: DashboardUserProfile;
+  attendancePercentage: number;
+  totalEvents: number;
+  attendedEvents: number;
+  achievements: SummaryItem[];
+  recentEvents: EventSummary[];
+  upcomingEvents: EventSummary[];
+  monthlyAttendance: ChartPoint[];
+  achievementsByCategory: CategoryCount[];
+  attendanceByType: CategoryCount[];
+}
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  totalEvents: number;
+  totalAchievements: number;
+  totalCourses: number;
+  recentUsers: Array<{ name: string; email: string; joinedDate: string }>;
+  recentEvents: Array<{ title: string; status: string; date: string }>;
+  recentAchievements: Array<{ userName: string; achievementTitle: string }>;
+  userGrowth: ChartPoint[];
+  attendanceOverview: CategoryCount[];
 }
 
 // Error response type

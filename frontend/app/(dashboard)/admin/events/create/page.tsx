@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { apiClient } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,6 +33,7 @@ export default function CreateEventPage() {
     shortDescription: "",
     type: "",
     category: "",
+    status: "Draft",
     startDate: "",
     endDate: "",
     startTime: "",
@@ -67,18 +69,10 @@ export default function CreateEventPage() {
         registrationDeadline: formData.registrationDeadline || undefined,
       };
 
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
-      });
+      const data = await apiClient.post("/events", eventData);
 
-      const data = await response.json();
-
-      if (data.success) {
-        setMessage("Contest created successfully!");
+      if ((data as any).success ?? true) {
+        setMessage("Event created successfully!");
         // Reset form
         setFormData({
           title: "",
@@ -86,6 +80,7 @@ export default function CreateEventPage() {
           shortDescription: "",
           type: "",
           category: "",
+          status: "Draft",
           startDate: "",
           endDate: "",
           startTime: "",
@@ -95,10 +90,10 @@ export default function CreateEventPage() {
           registrationDeadline: "",
         });
       } else {
-        setMessage(data.message || "Failed to create contest");
+        setMessage((data as any).message || "Failed to create event");
       }
     } catch (error) {
-      setMessage("An error occurred while creating the contest");
+      setMessage("An error occurred while creating the event");
     } finally {
       setLoading(false);
     }
@@ -226,16 +221,28 @@ export default function CreateEventPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Date & Time</CardTitle>
-            <CardDescription>Set the contest schedule</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Draft">Draft</SelectItem>
+                    <SelectItem value="Published">Published</SelectItem>
+                    <SelectItem value="Ongoing">Ongoing</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="Postponed">Postponed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">

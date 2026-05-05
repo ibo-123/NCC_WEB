@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useCourses } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,12 +12,80 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BookOpen, Users } from "lucide-react";
+import { apiClient } from "@/lib/api";
+// import { useAuth } from "@/lib/auth"; // Assuming you have an auth hook
+
+// Temporary mock useAuth hook for demonstration; replace with your actual auth logic
+function useAuth() {
+  // Replace this with your real authentication logic
+  return { user: null };
+}
+
+// Types
+interface Course {
+  _id: string;
+  title: string;
+  description: string;
+  enrolledCount: number;
+  instructor?: {
+    name: string;
+    _id: string;
+  };
+  category?: string;
+  level?: string;
+  duration?: string;
+}
+
+interface EnrollResponse {
+  message: string;
+  enrollment: {
+    _id: string;
+    courseId: string;
+    userId: string;
+    status: string;
+  };
+}
 
 export default function CoursesPage() {
-  const { courses, loading, enrollCourse } = useCourses();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const { user } = useAuth(); // Get current user
+
+  // Fetch courses on component mount
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const data = await apiClient.get<Course[] | { courses: Course[] }>(
+        "/courses",
+      );
+      if (Array.isArray(data)) {
+        setCourses(data);
+      } else if (data && Array.isArray((data as any).courses)) {
+        setCourses((data as { courses: Course[] }).courses);
+      } else {
+        setCourses([]);
+      }
+      setMessage(null);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to load courses",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredCourses = courses.filter(
     (course) =>
@@ -27,18 +94,73 @@ export default function CoursesPage() {
   );
 
   const handleEnroll = async (courseId: string) => {
+    if (!user) {
+      setMessage({
+        type: "error",
+        text: "Please log in to enroll in courses",
+      });
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+
     setEnrollingId(courseId);
-    setMessage("");
+    setMessage(null);
 
     try {
-      await enrollCourse(courseId);
-      setMessage("Successfully enrolled in course!");
-      setTimeout(() => setMessage(""), 3000);
+      const data = await apiClient.post<EnrollResponse>(
+        `/courses/${courseId}/enroll`,
+      );
+
+      if (!data || !(data as any).message) {
+        throw new Error("Failed to enroll");
+      }
+
+      // Update the enrolled count for the course
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course._id === courseId
+            ? { ...course, enrolledCount: course.enrolledCount + 1 }
+            : course,
+        ),
+      );
+
+      setMessage({
+        type: "success",
+        text: data.message || "Successfully enrolled in course!",
+      });
+      setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to enroll");
+      setMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to enroll",
+      });
+      setTimeout(() => setMessage(null), 3000);
     } finally {
       setEnrollingId(null);
     }
+  };
+
+  const checkEnrollmentStatus = async (courseId: string) => {
+    if (!user) return false;
+
+    try {
+      const response = await fetch(
+        `/api/enrollments/check?courseId=${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.isEnrolled;
+      }
+    } catch (error) {
+      console.error("Error checking enrollment:", error);
+    }
+    return false;
   };
 
   if (loading) {
@@ -67,12 +189,12 @@ export default function CoursesPage() {
       {message && (
         <div
           className={`p-4 rounded-lg border ${
-            message.includes("Successfully")
+            message.type === "success"
               ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800"
               : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
           }`}
         >
-          {message}
+          {message.text}
         </div>
       )}
 
@@ -99,7 +221,7 @@ export default function CoursesPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
-            <Card key={course._id || course.id} className="flex flex-col">
+            <Card key={course._id} className="flex flex-col">
               <CardHeader>
                 <CardTitle className="line-clamp-2">{course.title}</CardTitle>
                 <CardDescription className="line-clamp-3">
@@ -107,27 +229,36 @@ export default function CoursesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  <Users size={16} />
-                  <span>{course.enrolledCount || 0} enrolled</span>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Users size={16} />
+                    <span>{course.enrolledCount || 0} enrolled</span>
+                  </div>
+                  {course.level && (
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      Level: {course.level}
+                    </div>
+                  )}
+                  {course.duration && (
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      Duration: {course.duration}
+                    </div>
+                  )}
                 </div>
-                <Link
-                  href={`/courses/${course._id || course.id}`}
-                  className="block"
-                >
-                  <Button className="w-full mb-2" variant="outline">
-                    View Details
+                <div className="space-y-2">
+                  <Link href={`/courses/${course._id}`} className="block">
+                    <Button className="w-full" variant="outline">
+                      View Details
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => handleEnroll(course._id)}
+                    disabled={enrollingId === course._id}
+                    className="w-full"
+                  >
+                    {enrollingId === course._id ? "Enrolling..." : "Enroll Now"}
                   </Button>
-                </Link>
-                <Button
-                  onClick={() => handleEnroll(course._id || course.id || "")}
-                  disabled={enrollingId === (course._id || course.id)}
-                  className="w-full"
-                >
-                  {enrollingId === (course._id || course.id)
-                    ? "Enrolling..."
-                    : "Enroll Now"}
-                </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
