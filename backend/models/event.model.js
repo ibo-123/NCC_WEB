@@ -315,7 +315,7 @@ eventSchema.index({ createdBy: 1 });
 eventSchema.index({ "attendees.user": 1 });
 
 // Pre-save middleware
-eventSchema.pre("save", function(next) {
+eventSchema.pre("save", function() {
   // Auto-update status based on dates
   const now = new Date();
   const eventStart = new Date(`${this.startDate.toDateString()} ${this.startTime}`);
@@ -348,7 +348,6 @@ eventSchema.pre("save", function(next) {
   }
 
   this.updatedAt = Date.now();
-  next();
 });
 
 // Method to register user
