@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# NCC DSA Platform — Engineering Documentation
 
-## Getting Started
+These documents are the shared engineering source of truth for the six-account Claude team.
 
-First, run the development server:
+## Read order
+1. `MASTER_ARCHITECTURE.md`
+2. `DECISIONS.md`
+3. `DATABASE_SCHEMA.md`
+4. `AUTH_AND_SECURITY.md`
+5. `API_CONTRACT.md`
+6. `TEAM_WORKFLOW.md`
+7. `IMPLEMENTATION_PLAN.md`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The architecture audit is an input, not proof that the app builds or that every prototype state is implemented. Confirm current repository contents and validate the prototype before implementation.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Authority and change control
+- Approved decisions in `DECISIONS.md` and contracts in these files override individual assumptions.
+- If documents conflict, stop and report the conflict to the project lead. Do not silently choose one.
+- Only the lead may approve changes to shared contracts. A contract change must update every affected document and include migration/compatibility notes.
+- Items marked **OPEN** or **PROPOSED** are not final business policy.
+- Do not commit secrets, `.env` files, real personal data, or production credentials.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Current status
+These documents are an initial contract draft derived from the architecture audit summary. Review against the full audit and repository before treating the endpoint list or schema details as frozen.
