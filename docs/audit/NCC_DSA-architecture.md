@@ -1,3 +1,10 @@
+> **Status banner (added in Phase 3; the audit text below is unchanged).**
+> This is **historical input**, written against commit `e4418cc`. The repository is now at `851c94f`; that change touched only documentation, so the audit's facts about `app/` and the prototype still hold. Nothing has been re-audited, rendered or run since.
+> Where this audit differs from `docs/DECISIONS.md`, `docs/MASTER_ARCHITECTURE.md`, `docs/DATABASE_SCHEMA.md`, `docs/API_CONTRACT.md` or `docs/AUTH_AND_SECURITY.md`, **those documents win**. Known superseded items: the five-developer matrix (§7; see `docs/TEAM_WORKFLOW.md`), the `pageSize` pagination shape (§6.1), the `sessionState` and `disabled` fields, announcement hard delete, the 2FA verify path, the `ContestInvitation` model and the `score` field name.
+> Its open questions (§10) are tracked in `docs/DECISIONS.md`.
+
+---
+
 # NCC_DSA Platform — Milestone 1: Repository and Prototype Audit
 
 Status: **proposal for lead approval. No feature code has been written.**
