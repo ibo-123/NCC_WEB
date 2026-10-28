@@ -113,7 +113,7 @@ Create bodies require the listed fields; PATCH bodies take any subset (at least 
 | POST `/api/admin/rating/recalculate` | `rating.recalculate` | none | **BLOCKED**: depends on the B1 formula; no response contract and no code until LA-1(b) is decided. The route is not released | |
 
 ## 6. Coverage check
-- Every route in §3–§5 appears once with exactly one of: `public` (`POST /api/auth/register`, `POST /api/auth/login`) or one catalogued permission. All 43 permissions in `MASTER_ARCHITECTURE.md` §7.3 are used by at least one route, and no route uses a permission outside that catalog. The automated route-coverage check of §7.4 still has to be written by A4; **it does not exist and has not run.**
+- Every route in §3–§5 appears once with exactly one of: `public` (`POST /api/auth/register`, `POST /api/auth/login`) or one catalogued permission. All 44 permissions in `MASTER_ARCHITECTURE.md` §7.3 are used by at least one route, and no route uses a permission outside that catalog. The automated route-coverage check of §7.4 still has to be written by A4; **it does not exist and has not run.**
 - `/api/admin/notifications` and `/api/admin/audit-log` both use `auditlog.read`, because the notifications view is a view over `AuditLog` (T20).
 
 ## 7. Removed or held relative to the earlier draft
