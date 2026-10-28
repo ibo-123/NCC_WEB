@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens ported from design-reference/design/css/app.css (the .artboard[data-theme] blocks).
+   Dark is the default; the theme is chosen by <html data-theme> (cookie "ncc-theme", see lib/theme.js).
+   Colors that were hard-coded in the prototype are tokens here:
+   #c4232c -> --solid-danger, #0f7a3a -> --solid-success, #e23b48 -> --live. */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c1117; --surface: #121922; --card: #171f2a; --sunken: #0e141c;
+  --border: #2a3544; --border-strong: #3a475a;
+  --text: #e7edf4; --text-secondary: #c5d0de; --muted: #96a3b5;
+  --primary: #3ddc97; --primary-hover: #6ae6b0; --primary-soft: #123226; --primary-text: #062016;
+  --secondary: #243447; --secondary-text: #f4f7fb;
+  --success: #3ddc97; --success-soft: #123226;
+  --warning: #f0b429; --warning-soft: #3a2e12; --error: #ff8b95; --error-soft: #3c1a20;
+  --info: #9dc2ff; --info-soft: #17263c; --star: #f0b429; --highlight: #13281f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 12px 28px rgba(0, 0, 0, .28);
+  --sidebar: #0a0f15; --sidebar-text: #d7e0ea; --sidebar-muted: #8e9caf;
+  --sidebar-hover: #17202b; --sidebar-active: #143228; --sidebar-active-text: #b9f6d8;
+  --topbar: #10161e; --focus: #3ddc97; --focus-ring: rgba(61, 220, 151, .22);
+  --overlay: rgba(0, 0, 0, .62);
+  --up: #3ddc97; --down: #ff8b95;
+  --solid-danger: #c4232c; --solid-success: #0f7a3a; --live: #e23b48;
 }
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f8; --surface: #fff; --card: #fff; --sunken: #eef1f6;
+  --border: #e1e6ee; --border-strong: #cdd5e1;
+  --text: #12161f; --text-secondary: #3e4a5c; --muted: #5c687a;
+  --primary: #0f6e56; --primary-hover: #0c5b47; --primary-soft: #e5f6f0; --primary-text: #fff;
+  --secondary: #1b3a4b; --secondary-text: #f4f7fb;
+  --success: #0f7a3a; --success-soft: #e6f6ec;
+  --warning: #8a5a00; --warning-soft: #fff4d6; --error: #b4232c; --error-soft: #fdecee;
+  --info: #1d5bbf; --info-soft: #e7f0fc; --star: #a87400; --highlight: #e7f6f0;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 10px 24px rgba(16, 24, 40, .05);
+  --sidebar: #f7f8fa; --sidebar-text: #1c2430; --sidebar-muted: #667386;
+  --sidebar-hover: #e8edf2; --sidebar-active: #e5f4ee; --sidebar-active-text: #0c5b47;
+  --topbar: #fff; --focus: #0f6e56; --focus-ring: rgba(15, 110, 86, .2);
+  --overlay: rgba(16, 22, 32, .48);
+  --up: #0f7a3a; --down: #b4232c;
+  --solid-danger: #c4232c; --solid-success: #0f7a3a; --live: #e23b48;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* No web font is downloaded: IBM Plex is used when installed locally, else the system fallbacks. */
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-sunken: var(--sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-secondary);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-text: var(--primary-text);
+  --color-secondary: var(--secondary);
+  --color-secondary-text: var(--secondary-text);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-star: var(--star);
+  --color-highlight: var(--highlight);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-text);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-fg: var(--sidebar-active-text);
+  --color-topbar: var(--topbar);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-solid-danger: var(--solid-danger);
+  --color-solid-success: var(--solid-success);
+  --color-live: var(--live);
+  --shadow-card: var(--shadow);
+  --ring-focus: var(--focus-ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  *, ::before, ::after { border-color: var(--border); }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
   }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  button, input, select, textarea { font-family: inherit; color: inherit; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@keyframes ncc-spin { to { transform: rotate(360deg); } }
