@@ -44,9 +44,11 @@
 - **Exit:** student and admin flows tested end to end.
 
 ## Gate 5 — Competition and progress (A6)
-- Topics, problems and progress (raw counts), the provisional solve check behind `isSolveEligible()`, contests with fetch, review and publish, results, rating history (stored rows only, no formula), streak (`enabled: false` until B5), Codeforces client with timeouts.
-- No leaderboard, no manual result import, no LeetCode progress. `POST /api/admin/rating/recalculate` stays **BLOCKED** (B1, LA-1(b)).
-- **Exit:** workflows tested; external API failure returns `UPSTREAM_ERROR`.
+- Topics, problems and progress (raw counts), the provisional solve check behind `isSolveEligible()`, **individual and team contests** with Codeforces fetch, review and publish, results, rating history (stored rows only, no formula), streak (`enabled: false` until B5/B25), Codeforces client with timeouts.
+- **Teams (B22–B24):** create/join/leave, captain controls, admin list/disband; week-duration `mode: team` contests; member `ContestResult` upserts plus derived `TeamContestResult` after fetch.
+- **Dual streak surfaces** in the prototype and DTOs; enabled computation stays behind B5/B25.
+- No cross-contest leaderboard, no manual result import, no LeetCode progress, no team rating formula. `POST /api/admin/rating/recalculate` stays **BLOCKED** (B1, LA-1(b)).
+- **Exit:** individual and team contest workflows tested; team membership rules tested; external API failure returns `UPSTREAM_ERROR`.
 
 ## Gate 6 — Admin and notifications
 - Admin users, restrict and reopen (B2 policy OPEN), the admin dashboard and its `AuditLog` recent activity, the audit-log view.
@@ -76,8 +78,9 @@
 4. A student browses published lectures and progress.
 5. Attendance check-in succeeds; a duplicate, a wrong code and brute force are rejected; an expired session is closed on access.
 6. An admin cannot delete a lecture while a session has `closedAt: null`.
-7. An admin creates a contest, fetches results, reviews them and publishes them.
-8. Rating and streak show stored values only; no leaderboard exists.
+7. An admin creates an individual contest, fetches results, reviews them and publishes them.
+7b. Students create or join a team; an admin creates a week-long team contest, fetches Codeforces standings, reviews member and team rows, and publishes them.
+8. Rating and individual/team streak surfaces show stored or config-gated values only; no cross-contest leaderboard exists.
 9. Restriction and reopening are authorized and audited, and a restricted student sees only `/restricted`.
 10. Admin 2FA enrollment and challenge, with `ADMIN_2FA_ENABLED=true` in a test environment only.
 11. A student reads only their own notifications.

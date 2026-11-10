@@ -61,12 +61,14 @@
 | `checkSolve(ctx, problemId)` → `{ result, problem }` | `POST /problems/:id/verify` | Synchronous with a timeout. `result` in `solved, failed, unlinked, unavailable`. LeetCode returns `unavailable` and records no progress (B7). |
 | `isSolveEligible({ problem, submission, user })` → boolean | called by `checkSolve` only | **TEMPORARY default:** accepts any accepted submission and records its platform time (`solvedAt`). This is a **provisional solve check**, not completed verification and not ownership proof (B8). Eligibility rules live only here. |
 | `fetchUserSubmissions(handle, { timeoutMs })`, `fetchContestStandings(contestId, { timeoutMs })` (`lib/integrations`) | Codeforces client | Bounded timeout and retries (PROPOSED: 10 s, at most one retry). Failure becomes `UPSTREAM_ERROR`. |
-| `adminContests`: `list, get, create, update, publish, remove` | admin contests | `publish` calls `notify` once (contest trigger). |
-| `fetchResults(ctx, contestId)`, `listFetchedResults(ctx, contestId, query)`, `publishResults(ctx, contestId)` | results | `fetchResults` is an idempotent upsert on contest and user and refuses after publish. `publishResults` creates no notification rows. |
-| `listContests(ctx, query)`, `getContest(ctx, id)`, `listResults(ctx, contestId, query)` | student contests | Results only when published. |
-| `getMyRating(ctx)`, `listRatingHistory(ctx, query)`, `listAdminRating(ctx, query)` | rating reads | Stored rows only. |
+| `adminContests`: `list, get, create, update, publish, remove` | admin contests | `mode` is `individual` or `team`. Team create defaults duration from `TEAM_WEEKLY_CONTEST_MINUTES`. `publish` calls `notify` once (contest trigger). |
+| `fetchResults(ctx, contestId)`, `listFetchedResults(ctx, contestId, query)`, `publishResults(ctx, contestId)` | results | `fetchResults` upserts member `ContestResult` rows from Codeforces (T14) and, when `mode: team`, derives `TeamContestResult` aggregates (B24; aggregation OPEN). Refuses after publish. `publishResults` creates no notification rows. |
+| `listContests(ctx, query)`, `getContest(ctx, id)`, `listResults(ctx, contestId, query)` | student contests | `query.mode` optional. Results only when published. Team contests return team and member result shapes. |
+| `createTeam(ctx, { name })`, `joinTeam(ctx, { inviteCode })`, `leaveTeam(ctx)`, `removeMember(ctx, userId)`, `transferCaptain(ctx, userId)`, `disbandTeam(ctx)`, `getMyTeam(ctx)` | student teams | One active membership per student (B23). Captain-only for remove, transfer, disband. |
+| `listAdminTeams(ctx, query)`, `getAdminTeam(ctx, id)`, `adminDisbandTeam(ctx, id, reason?)` | admin teams | Audited. |
+| `getMyRating(ctx)`, `listRatingHistory(ctx, query)`, `listAdminRating(ctx, query)` | rating reads | Stored rows only. Individual rating only in v1; no team rating formula. |
 | `computeRating(inputs, config)`; `recalculateRatings(ctx)` | none released | **BLOCKED (B1, LA-1(b)):** no formula, no response contract. `formulaVersion` is the only formula field. |
-| `getStreak(ctx)` | `GET /streak/me` | `{ enabled: false }` unless `STREAK_QUALIFYING_TYPES` is set; the enabled shape is **BLOCKED (B5)**. |
+| `getStreak(ctx)` | `GET /streak/me` | `{ enabled: false }` unless `STREAK_QUALIFYING_TYPES` is set. Dual shape `{ enabled, individual, team }` is **BLOCKED (B5, B25)** until qualifying types are configured. |
 | `listProgressByStudent(ctx, query)`, `getStudentProgress(ctx, userId, query)` | admin progress | Raw counts. |
 
 ## 6. Operations that must be transactional
@@ -75,7 +77,7 @@ Restrict and reopen (user plus audit); `setUserRole` (user, session revocation, 
 ## 7. Open or blocked in this contract
 | Item | Status |
 |---|---|
-| Lecture `state` values (B12); streak enabled shape (B5); rating formula (B1) | OPEN or BLOCKED as marked |
+| Lecture `state` values (B12); streak enabled shape (B5, B25); team aggregation (B24); team size (B23); rating formula (B1) | OPEN or BLOCKED as marked |
 | `domain.verb` action registry; admin notifications view | Not established; the view is BLOCKED |
 | Notification type identifiers and recipient sets | PROPOSED; lead to confirm |
 | Admin dashboard owner (A5) and `stats` fields | Proposed owner; fields open |

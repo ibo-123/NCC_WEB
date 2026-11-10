@@ -24,8 +24,12 @@ Nothing here claims a route was built, run or tested. None was. The inventory st
 - **Announcement:** `{ id, title, body, type, publishedAt }`, `type` in `general, important, contest, lecture, attendance`.
 - **Notification:** `{ id, type, title, body, href: string|null, createdAt }`. No read state in v1 (B15, LD-3).
 - **Lecture:** `{ id, title, description, scheduledAt, liveUrl: string|null, resources: [{ title, type, url }], state, attendance: { sessionOpen, checkedIn } }`. `resources[].type` in `pdf, link, file`. `sessionOpen` is true only when the lecture's session has `closedAt` null and `expiresAt` in the future. `state` comes from `deriveLectureState()`; its values are **OPEN (B12)** and defined in `SERVICES.md` once decided. `liveUrl` is shown for published lectures that have one (B12 TEMPORARY).
-- **Contest:** `{ id, title, description, platform: "codeforces", url, invitationUrl: string|null, startsAt, durationMinutes, status, resultsPublished, myResult: ContestResult|null }`, `status` derived: `upcoming, active, completed` (T8).
+- **Contest:** `{ id, title, description, mode: "individual"|"team", platform: "codeforces", url, invitationUrl: string|null, startsAt, durationMinutes, status, resultsPublished, myResult: ContestResult|null, myTeamResult: TeamContestResult|null }`, `status` derived: `upcoming, active, completed` (T8). `myTeamResult` is set only for `mode: team` when the viewer has an active team and results are published.
 - **ContestResult:** `{ rank, points, penalty, handle, name, isMe }`: source-provided values as stored (B10, `DATABASE_SCHEMA.md` §4.10). No scoring policy is applied.
+- **TeamContestResult:** `{ teamId, teamName, rank, points, penalty: number|null, memberCount, matchedMembers, isMine }` — derived aggregate for a team contest (B24; aggregation rule OPEN).
+- **Team:** `{ id, name, slug, inviteCode, captainId, status, memberCount, members: TeamMember[], streak: { current: number|null, longest: number|null }|null }`.
+- **TeamMember:** `{ userId, name, role: "captain"|"member", handles: { codeforces: string|null }, joinedAt }`.
+- **StreakBundle:** `{ enabled: boolean, individual: StreakView|null, team: StreakView|null }`. Until B5/B25 are decided, the live endpoint may still return `{ enabled: false }` only. **Enabled shape (PROPOSED once config is set):** `individual` always present when enabled; `team` is null when the student has no active team.
 - **ProblemProgress:** `{ id, title, topicId, platform, url, value: number|null, status, solvedAt: Iso|null, lastCheckedAt: Iso|null }`, `status` in `unsolved, pending, solved, failed` (`unsolved` = no verification record). `value` has no calculation attached (B18). `solved` is a **provisional solve check**, not ownership proof (B8).
 - **AttendanceSummary:** `{ attended: number, percentage: null }`. The percentage and its denominator are OPEN (B4).
 - **RatingEntry:** `{ value, previous: number|null, change: number|null, source, components: { problem, contest, attendance }|null, computedAt, formulaVersion: string|null }`. No formula is defined (B1).
@@ -50,7 +54,7 @@ Nothing here claims a route was built, run or tested. None was. The inventory st
 ## 4. Student routes
 | Method and path | Permission | Request | Success | Route errors |
 |---|---|---|---|---|
-| GET `/api/dashboard` | `dashboard.read` | none | `{ rating, attendance: AttendanceSummary, progress: { solved, total }, upcomingLectures: Lecture[], upcomingContests: Contest[], announcements: Announcement[], streak }`. List sizes: 5 each (PROPOSED) | |
+| GET `/api/dashboard` | `dashboard.read` | none | `{ rating, attendance: AttendanceSummary, progress: { solved, total }, upcomingLectures: Lecture[], upcomingContests: Contest[], upcomingTeamContests: Contest[], team: Team|null, announcements: Announcement[], streak: StreakBundle }`. List sizes: 5 each (PROPOSED). `upcomingContests` are `mode: individual`; `upcomingTeamContests` are `mode: team` | |
 | GET `/api/announcements` | `announcements.read` | `page, limit, type?, q?` | list of Announcement, published only | |
 | GET `/api/announcements/:id` | `announcements.read` | | Announcement | `NOT_FOUND` |
 | GET `/api/notifications` | `notifications.read` | `page, limit` | list of Notification, owner only. **No mark-read routes in v1** (LD-3) | |
@@ -58,16 +62,23 @@ Nothing here claims a route was built, run or tested. None was. The inventory st
 | GET `/api/lectures/:id` | `lectures.read` | | Lecture | `NOT_FOUND` |
 | POST `/api/lectures/:id/attendance` | `attendance.checkin` | `{ code }`: 4 digits (prototype; code length is not settled by a frozen document) | 201 `{ record: { lectureId, submittedAt } }` | `ATTENDANCE_INVALID_CODE` 400; `ATTENDANCE_EXPIRED`, `ATTENDANCE_NOT_ACTIVE`, `ATTENDANCE_DUPLICATE` 409; lockout `RATE_LIMITED` |
 | GET `/api/attendance/me` | `attendance.read` | `page, limit` | `{ summary: AttendanceSummary, history: { items: [{ lectureId, title, submittedAt }], pagination } }` | |
-| GET `/api/contests` | `contests.read` | `page, limit` | list of Contest, published only | |
+| GET `/api/contests` | `contests.read` | `page, limit, mode?` (`individual`\|`team`) | list of Contest, published only; default returns both modes | |
 | GET `/api/contests/:id` | `contests.read` | | Contest | `NOT_FOUND` |
-| GET `/api/contests/:id/results` | `results.read` | `page, limit, q?` | list of ContestResult, only when results are published | `NOT_FOUND` otherwise |
+| GET `/api/contests/:id/results` | `results.read` | `page, limit, q?` | For `mode: individual`: list of ContestResult. For `mode: team`: `{ teams: TeamContestResult[], members: ContestResult[] }` when published. Member rows stay source data; team rows are derived (B24) | `NOT_FOUND` otherwise |
+| GET `/api/teams/me` | `teams.read` | | Team or `null` when the student has no active membership | |
+| POST `/api/teams` | `teams.manage` | `{ name }` | 201 Team (caller becomes captain; invite code generated) | `INVALID_STATE` if already on a team; `VALIDATION_ERROR` |
+| POST `/api/teams/join` | `teams.manage` | `{ inviteCode }` | Team | `NOT_FOUND`; `INVALID_STATE` if full, disbanded, or already on a team |
+| POST `/api/teams/me/leave` | `teams.manage` | none | `{ ok: true }` | `INVALID_STATE` if captain with other members still present (must transfer or disband first) |
+| POST `/api/teams/me/members/:userId/remove` | `teams.manage` | none | Team | `FORBIDDEN` unless captain; `NOT_FOUND` |
+| POST `/api/teams/me/transfer` | `teams.manage` | `{ userId }` | Team | `FORBIDDEN` unless captain; `INVALID_STATE` if target is not an active member |
+| POST `/api/teams/me/disband` | `teams.manage` | none | `{ id }` | `FORBIDDEN` unless captain |
 | GET `/api/progress/me` | `progress.read` | | `{ solved, total, topics: [{ id, name, slug, solved, total }] }` raw counts only (B18) | |
 | GET `/api/progress/topics/:id/problems` | `progress.read` | `page, limit` | list of ProblemProgress, published problems of the topic | `NOT_FOUND` |
 | GET `/api/progress/problems/:id` | `problems.read` | | ProblemProgress | `NOT_FOUND` |
 | POST `/api/problems/:id/verify` | `problems.check` | none | 200 `{ result, problem: ProblemProgress }`, `result` in `solved, failed, unlinked, unavailable` | `UPSTREAM_ERROR` 502; `RATE_LIMITED` |
 | GET `/api/rating/me` | `rating.read` | | `{ value: number|null, components, computedAt, formulaVersion }` from stored rows only | |
 | GET `/api/rating/me/history` | `rating.read` | `page, limit` | list of RatingEntry | |
-| GET `/api/streak/me` | `streak.read` | | `{ enabled: false }` until B5 is decided. The enabled shape is **BLOCKED (B5)** | |
+| GET `/api/streak/me` | `streak.read` | | `{ enabled: false }` until B5 is decided. The dual individual+team enabled shape is **BLOCKED (B5, B25)** until qualifying types are configured; see StreakBundle above | |
 
 Notes:
 - The solve check is synchronous with a timeout (T13). `pending` is stored in the schema but this route never returns it in v1. It records the platform submission time (B8). The path name does not imply identity or ownership verification; it is the audit's path. LeetCode problems return `unavailable` and award no progress (B7). Rename on request.
@@ -96,7 +107,10 @@ Create bodies require the listed fields; PATCH bodies take any subset (at least 
 | GET `/api/admin/attendance/:sessionId` | `attendance.admin.read` | `page, limit` | `{ session: AdminAttendanceSession, records: { items: [{ userId, name, submittedAt }], pagination } }` | `NOT_FOUND` |
 | POST `/api/admin/lectures/:id/attendance/start` | `attendance.manage` | `{ validForSeconds? }`: positive integer; default `ATTENDANCE_DEFAULT_VALID_SECONDS`. Upper bound not defined (B4 OPEN) | 201 AdminAttendanceSession with `code` | `NOT_FOUND`; `INVALID_STATE` while a non-expired open session exists. An expired open session is closed lazily first (A1) |
 | POST `/api/admin/attendance/:sessionId/close` | `attendance.manage` | none | AdminAttendanceSession | `NOT_FOUND`; `INVALID_STATE` if already closed (PROPOSED use) |
-| GET, POST `/api/admin/contests`; GET, PATCH `/api/admin/contests/:id` | `contests.manage` | `{ title, description?, platform: "codeforces", platformContestId, url, invitationUrl?, startsAt, durationMinutes }` | Admin Contest: Contest fields plus `publication, resultsState, lastFetchedAt, fetchSummary` | `NOT_FOUND` |
+| GET, POST `/api/admin/contests`; GET, PATCH `/api/admin/contests/:id` | `contests.manage` | `{ title, description?, mode: "individual"\|"team", platform: "codeforces", platformContestId, url, invitationUrl?, startsAt, durationMinutes }` — team mode defaults `durationMinutes` from `TEAM_WEEKLY_CONTEST_MINUTES` when omitted | Admin Contest: Contest fields plus `publication, resultsState, lastFetchedAt, fetchSummary` | `NOT_FOUND` |
+| GET `/api/admin/teams` | `teams.admin.read` | `page, limit, q?, status?` | list of Team summary rows | |
+| GET `/api/admin/teams/:id` | `teams.admin.read` | | Team plus streak caches | `NOT_FOUND` |
+| POST `/api/admin/teams/:id/disband` | `teams.admin.manage` | `{ reason? }` | `{ id }` | `NOT_FOUND`; audited |
 | POST `/api/admin/contests/:id/publish` | `contests.publish` | none | Admin Contest | `NOT_FOUND`, `INVALID_STATE`. Creates notifications for the contest trigger (B15) |
 | DELETE `/api/admin/contests/:id` | `contests.delete` | | `{ id }` | `NOT_FOUND` |
 | GET `/api/admin/contests/:id/results` | `contests.manage` | `page, limit` | list of fetched rows `{ userId, handle, name, rank, points, penalty, fetchedAt }` plus `fetchSummary` | `NOT_FOUND` |
@@ -113,7 +127,7 @@ Create bodies require the listed fields; PATCH bodies take any subset (at least 
 | POST `/api/admin/rating/recalculate` | `rating.recalculate` | none | **BLOCKED**: depends on the B1 formula; no response contract and no code until LA-1(b) is decided. The route is not released | |
 
 ## 6. Coverage check
-- Every route in §3–§5 appears once with exactly one of: `public` (`POST /api/auth/register`, `POST /api/auth/login`) or one catalogued permission. All 44 permissions in `MASTER_ARCHITECTURE.md` §7.3 are used by at least one route, and no route uses a permission outside that catalog. The automated route-coverage check of §7.4 still has to be written by A4; **it does not exist and has not run.**
+- Every route in §3–§5 appears once with exactly one of: `public` (`POST /api/auth/register`, `POST /api/auth/login`) or one catalogued permission. Permissions added for Group mode (`teams.read`, `teams.manage`, `teams.admin.read`, `teams.admin.manage`) must stay aligned with `MASTER_ARCHITECTURE.md` §7.3. The automated route-coverage check of §7.4 still has to be written by A4; **it does not exist and has not run.**
 - `/api/admin/notifications` and `/api/admin/audit-log` both use `auditlog.read`, because the notifications view is a view over `AuditLog` (T20).
 
 ## 7. Removed or held relative to the earlier draft
@@ -137,7 +151,7 @@ Create bodies require the listed fields; PATCH bodies take any subset (at least 
 | The five BLOCKED response contracts (LA-3) | BLOCKED |
 | `POST /api/admin/rating/recalculate`, B1 formula (LA-1(b)) | BLOCKED |
 | `GET /api/admin/notifications` (needs the `domain.verb` registry) | BLOCKED |
-| Streak enabled shape (B5); lecture `state` values (B12) | OPEN, partially blocked |
+| Streak enabled shape (B5, B25 dual individual+team); lecture `state` values (B12); team aggregation (B24); team size (B23) | OPEN, partially blocked |
 | 409 `INVALID_STATE` for lecture-delete refusal, session close of a closed session | PROPOSED use of an approved code, to be confirmed |
 | Dashboard `stats` fields; the owner of `GET /api/admin/dashboard` (not assigned by L1) | Open; assigned in batch 3 (`TEAM_WORKFLOW.md`) |
 | Attendance code length (4 digits per prototype, not frozen); `validForSeconds` upper bound (B4) | Open |

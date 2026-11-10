@@ -10,7 +10,7 @@
 | A3 | Database | Connection helper, all models and indexes, seed and maintenance scripts, schema tests, `audit()`, `notify()`, `recordActivity()` helpers |
 | A4 | Auth/Security | Sessions, permissions map, `PUBLIC_ROUTES`, rate limiting, AEAD helper, CSRF check, 2FA, profile and handles, restriction enforcement, admin users |
 | A5 | Learning | Announcements, lectures, attendance, notifications, student dashboard, with their admin screens |
-| A6 | Competition | Topics, problems, progress, solve check, contests, results, rating, streak, Codeforces client, with their admin screens |
+| A6 | Competition | Topics, problems, progress, solve check, contests (individual and team), teams, results, rating, individual and team streak, Codeforces client, with their admin screens |
 
 Each admin screen and admin route belongs to the account that owns its domain. The lead may reassign scope; every reassignment is recorded here first.
 
@@ -32,7 +32,7 @@ No two accounts own the same file. If a change touches another owner's file, ask
 | `lib/http/`, `lib/config/`, `lib/validation/` | A2 | |
 | `lib/auth/` (incl. `permissions.js`, `PUBLIC_ROUTES`), `lib/security/` | A4 | A2's `withApi` calls A4's access resolver through an agreed interface. |
 | `lib/db/`, `models/`, `scripts/seed`, maintenance scripts | A3 | Includes the session-revocation and 2FA re-encryption scripts (`AUTH_AND_SECURITY.md`). |
-| `lib/services/<domain>/` | Domain owner | Auth and users A4; announcements, lectures, attendance, notifications, student dashboard A5; topics, problems, progress, contests, results, rating, streak A6. |
+| `lib/services/<domain>/` | Domain owner | Auth and users A4; announcements, lectures, attendance, notifications, student dashboard A5; topics, problems, progress, contests, teams, results, rating, streak A6. |
 | Admin dashboard route and service (`GET /api/admin/dashboard`) | A5 (confirmed by A1) | L1 does not assign it. |
 | Admin audit-log route and page | A4 (confirmed by A1) | Read-only over A3's `AuditLog`. |
 | `lib/integrations/` | A6 | Codeforces client. |
@@ -60,10 +60,10 @@ No two accounts own the same file. If a change touches another owner's file, ask
 |---|---|---|---|
 | A1 | Approve Batch C, the Node range and the dependency list; decide LA-1 to LA-5 and the S-values | none | application code |
 | A2 | `lib/config/env.js` with the failure scopes of `MASTER_ARCHITECTURE.md` §8.2; `lib/http` (envelope, registry errors, pagination, `withApi` shell with an access interface); `lib/validation`; configs, CI, test setup; token, theme and shared-component foundation | Node and dependency approval | models, `lib/auth`, domain services |
-| A3 | `lib/db/connect.js`; all 16 models and indexes from `DATABASE_SCHEMA.md`; seed script; schema tests on a replica set; the three helpers; publish exports first | Batch C approval; test-tooling approval | auth logic, routes, UI |
+| A3 | `lib/db/connect.js`; all models and indexes from `DATABASE_SCHEMA.md` (including Team, TeamMembership, TeamContestResult); seed script; schema tests on a replica set; the three helpers; publish exports first | Batch C approval; test-tooling approval | auth logic, routes, UI |
 | A4 | `lib/security` (AEAD, rate limit, CSRF check), sessions, `permissions.js`, auth routes and pages, restriction enforcement, 2FA behind its flag, route-coverage check | A3 models; A2 `withApi` interface; approval of `AUTH_AND_SECURITY.md` and the S-values | other domains' services |
 | A5 | Announcements, lectures, attendance, notifications, student dashboard, with admin screens | A3 exports; A4 helpers; A2 shared UI; `SERVICES.md` | `models/`, `lib/auth`, A6 domains |
-| A6 | Topics, problems, progress, solve check, contests, results, rating, streak, Codeforces client, with admin screens | same as A5 | `models/`, `lib/auth`, A5 domains |
+| A6 | Topics, problems, progress, solve check, contests (individual + team), teams, results, rating, dual streak, Codeforces client, with admin screens | same as A5 | `models/`, `lib/auth`, A5 domains |
 
 ## 6. Parallelism
 - **Can start now, in parallel, on disjoint files:** A2 and A3, once A1 approves Batch C and the Node and dependency list.

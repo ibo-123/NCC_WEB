@@ -25,7 +25,7 @@
 | A3 | Database | Connection helper, all models and indexes, seed script, schema tests, AuditLog/Notification/ActivityEvent helpers |
 | A4 | Auth/Security | Sessions, guards, rate limiting, 2FA, profile/handles, restriction enforcement, admin users |
 | A5 | Learning | Announcements, lectures, attendance, notifications, student dashboard (+ their admin screens) |
-| A6 | Competition | Topics/problems/progress/verification, contests/results, rating, streak, Codeforces client (+ their admin screens) |
+| A6 | Competition | Topics/problems/progress/verification, contests/results (individual and team), teams, rating, individual and team streak, Codeforces client (+ their admin screens) |
 
 Rules: each account works on an isolated branch and submits pull requests; no two accounts own the same file; A3 publishes agreed schemas and interfaces before feature work depends on them. Details: `TEAM_WORKFLOW.md`.
 
@@ -82,7 +82,7 @@ Specified in the document named in the last column.
 | B2 | Restriction policy | OPEN | Thresholds come from config and are unset by default, so nothing restricts automatically. Admin restrict/reopen endpoints exist, authorized and audited. Statuses are `active` and `restricted` only; no `disabled`. The prototype has no Restrict button; adding one needs lead approval. |
 | B3 | Registration and identity | OPEN | Eligibility sits behind `REGISTRATION_MODE` (`closed` default in production, `open` only if set). No allowlist or invite model. First admin comes from the seed script and env only; no promotion endpoint. Interim for a duplicate email: HTTP 409 `CONFLICT` with `fields.email` (approved code, approved meaning), which reveals that the email is registered, as the prototype does. `EMAIL_ALREADY_REGISTERED` is PENDING and not used. Whether to keep revealing is the open account-enumeration trade-off (LA-2); it is not decided here. The closed-registration refusal has no approved code, so its response contract is BLOCKED (LA-3). |
 | B4 | Attendance | OPEN (partly V1) | Built: configurable expiry (PROPOSED default 600 s), configurable max attempts (PROPOSED 5), lockout duration (PROPOSED dev default 900 s), one open session per lecture, brute-force protection. Not built: attendance percentage, denominator, corrections. DTOs return `percentage: null` and the UI shows counts only. |
-| B5 | Streak | OPEN | ActivityEvents recorded. Qualifying types come from config, unset by default; the streak endpoint returns `enabled:false` and streak surfaces stay hidden. No link to rating. |
+| B5 | Streak | OPEN | ActivityEvents recorded. Qualifying types come from config, unset by default; the streak endpoint returns `enabled:false` and streak surfaces stay hidden. When enabled, the shape covers **individual and team** streaks (`DECISIONS.md` §10, B25). No link to rating. |
 | B6 | Admin 2FA | OPEN | Enrollment and login-challenge endpoints specified behind `ADMIN_2FA_ENABLED` (default false). Not mandatory. No disable, recovery codes or reset until approved; do not enable in production before the recovery procedure is approved. If enabled with a missing or invalid `TWOFA_ENCRYPTION_KEY`, enrollment and verification are refused with the interim configuration refusal, a session awaiting 2FA stays awaiting 2FA, and 2FA is never bypassed or marked verified (`MASTER_ARCHITECTURE.md` §8.2). |
 | B7 | LeetCode | V1-DIRECTION | Handles stored; LeetCode problems tracked; verify returns `unavailable`; no verified progress awarded. |
 | B8 | Codeforces ownership | OPEN | The check looks for an accepted submission on the stored handle. Ownership of the handle is **not** proven, and the rule for earlier solves is undecided. Eligibility lives only in `isSolveEligible()`. Its TEMPORARY default accepts any accepted submission and records the submission time. This is a provisional solve check, not completed solve verification and not ownership proof. UI copy and docs must not call it "verified identity". |
@@ -148,3 +148,36 @@ Corrections accepted in batch B that land in documents not yet revised. Each mus
 | `isSolveEligible()` signature and the "provisional solve check" wording | `SERVICES.md` (F), `API_CONTRACT.md` (E) |
 | Release checklist item: `RESTRICTED_CONTACT_EMAIL` set and valid in production (a missing value is a defect to fix before launch, not an accepted state) | `IMPLEMENTATION_PLAN.md` (G) |
 | Launch blockers LB-1 to LB-4 in Gate 7 and the release checklist, with the LB-1 sentence above reproduced verbatim in the Gate 7 exit criteria | `IMPLEMENTATION_PLAN.md` (G) |
+
+## 10. Product modes: Individual and Group (PENDING lead confirmation)
+
+**Why this section exists.** The product now has two competition tracks on one platform: **Individual** and **Group (team)**. This section records the direction for that split. It is **PENDING** lead confirmation of each ID below; until confirmed, implementers follow the v1 direction and leave OPEN seams alone. Sibling documents (`MASTER_ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `API_CONTRACT.md`, `SERVICES.md`, `IMPLEMENTATION_PLAN.md`, and the prototype in `design-reference/design`) must stay consistent with this section.
+
+### 10.1 Modes
+| Mode | What it covers | Student entry |
+|---|---|---|
+| **Individual** | Lectures, attendance, topic progress, provisional solve checks, individual Codeforces contests, individual rating, **individual streak** | Existing student shell; Contests and Streak show the individual track |
+| **Group** | Student-created teams, weekly team contests on Codeforces, team standings derived after a Codeforces fetch, **team streak** (and the member's individual streak stays visible) | Teams nav; Contests filtered or sectioned by `mode: team` |
+
+Both modes share the same account, handles, auth, restriction and admin shell. Learning (announcements, lectures, attendance, progress) stays shared and is not duplicated per mode.
+
+### 10.2 New and amended decisions
+| ID | Topic | Status | v1 direction / seam |
+|---|---|---|---|
+| T25 | Team models and contest mode | PENDING | Schema adds `Team`, `TeamMembership`, `TeamContestResult`, and `Contest.mode` in `{ individual, team }` (default `individual`). Soft deletion for teams follows T9 once approved. Spec: `DATABASE_SCHEMA.md`. |
+| B5 | Streak (amended) | OPEN (seam extended) | ActivityEvents still recorded for individuals. Qualifying types remain config-driven and unset by default. **Enabled shape (when config is set):** `GET /api/streak/me` returns both `individual` and `team` streaks. Team streak is computed only while the user has an active membership; with no team it returns `team: null`. Formula and qualifying team actions stay OPEN. No link to rating. |
+| B22 | Individual / Group product split | PENDING | Navigation and contest lists expose both tracks. The dashboard shows individual streak and, when the student is on a team, team streak and the next team contest. Do not invent a second login or a second rating formula for teams in v1. |
+| B23 | Teams | PENDING | Active students may create a team, join with an invite code, leave, and (captain only) remove a member or transfer captaincy. One active membership per student in v1. Max members, invite-code length and disband rules are configurable seams (PROPOSED defaults: max 5 members, 8-character code). No team chat. Admins can list teams and force-disband. |
+| B24 | Weekly group contests | PENDING | Admins create contests with `mode: team` and a week-length window (`durationMinutes` = 10080 unless NCC sets another value). Platform stays Codeforces only. Flow remains fetch → review → publish (T14, B9). Fetch still pulls **individual** Codeforces standings for linked handles; the platform then upserts member `ContestResult` rows and derives `TeamContestResult` aggregates for published team standings. Aggregation rule (sum of points, sum of solved, or another rule) is OPEN; store source member rows unchanged and store the derived team row separately. No cross-contest team leaderboard in v1 (same spirit as B10). |
+| B25 | Team streak surfaces | PENDING | Prototype and UI show Individual streak and Team streak as separate cards. Team streak is hidden when the student has no team. Admin may inspect a team's current and longest streak as stored or derived values only; no formula is invented here. |
+
+### 10.3 Ownership
+A6 owns team services, team contest aggregation, dual-streak reads and their admin screens. A3 owns the new models and indexes. A2 owns shared UI for mode tabs and team cards. A5 does not duplicate learning screens for teams.
+
+### 10.4 NCC approvals added by this section
+| ID | Approval needed |
+|---|---|
+| B22 | Confirm the Individual / Group split and what stays shared |
+| B23 | Team size, invite model, captain powers, whether a student may be on more than one team |
+| B24 | Week length, team scoring/aggregation rule, visibility of member vs team ranks |
+| B5 / B25 | Qualifying actions for individual and for team streaks, and day-boundary rules |

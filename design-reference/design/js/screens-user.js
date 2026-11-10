@@ -1,13 +1,14 @@
 addScreen({
   id: "dashboard", order: 500, group: "05 User dashboard", title: "Dashboard",
-  links: [["Lecture", "lecture-detail"], ["Live session", "lecture-live"], ["Contest", "contest-detail"], ["Progress", "progress"], ["Rating", "rating"], ["Loading", "dashboard-loading"]],
+  links: [["Lecture", "lecture-detail"], ["Live session", "lecture-live"], ["Contest", "contest-detail"], ["Team contests", "team-contests"], ["My team", "teams"], ["Progress", "progress"], ["Rating", "rating"], ["Loading", "dashboard-loading"]],
   render() {
     const u = DATA.user;
+    const t = DATA.team;
     return appShell({
       active: "dashboard",
       crumbs: [["Dashboard"]],
       content: `
-        ${pageHead(`Welcome back, ${u.first}`, "Tuesday, 13 October 2026", btn("Join live session", { nav: "lecture-live" }))}
+        ${pageHead(`Welcome back, ${u.first}`, "Individual practice and Group competition on one account.", btn("Join live session", { nav: "lecture-live" }))}
         <div class="hero-grid">
           <article class="card">
             <p class="stat-label">NCC_DSA rating</p>
@@ -17,20 +18,22 @@ addScreen({
             <div style="margin-top:12px">${btn("View rating", { variant: "outline", size: "sm", nav: "rating" })}</div>
           </article>
           <article class="card">
-            <p class="stat-label">Current streak</p>
+            <p class="stat-label">Individual streak</p>
             <p class="stat-value">${icon("flame", 22)} ${u.streak} days</p>
-            <p class="stat-hint">Longest streak · ${u.longest} days</p>
-            <div style="margin-top:12px">${btn("View streak", { variant: "ghost", size: "sm", nav: "streak" })}</div>
+            <p class="stat-hint">Longest · ${u.longest} days</p>
+            <p class="stat-label" style="margin-top:14px">Team streak · ${t.name}</p>
+            <p class="stat-value" style="font-size:22px">${u.teamStreak} days</p>
+            <div class="cluster" style="margin-top:12px">${btn("My streak", { variant: "ghost", size: "sm", nav: "streak" })}${btn("Team streak", { variant: "ghost", size: "sm", nav: "team-streak" })}</div>
           </article>
           <div class="mini-stats span-row">
             <article class="card mini"><p class="stat-label">Attendance</p><p class="stat-value num">${u.attendancePct}%</p><p class="stat-hint">${u.attended} attended · ${u.missed} missed</p></article>
             <article class="card mini"><p class="stat-label">Problems solved</p><p class="stat-value num">${u.solved}</p><p class="stat-hint">${u.solved} / ${u.total} on the sheet</p></article>
-            <article class="card mini"><p class="stat-label">Contests</p><p class="stat-value num">${u.contestsJoined}</p><p class="stat-hint">Participations recorded</p></article>
+            <article class="card mini"><p class="stat-label">Team</p><p class="stat-value" style="font-size:20px">${t.name}</p><p class="stat-hint">${t.memberCount} / ${t.maxMembers} members</p></article>
           </div>
         </div>
         <div class="grid-2">
           <article class="card"><div class="spread"><h2>Upcoming lectures</h2><a data-nav="lectures" href="#lectures">All lectures</a></div>${lectureRows()}</article>
-          <article class="card"><div class="spread"><h2>Upcoming contests</h2><a data-nav="contests" href="#contests">All contests</a></div>${contestRows(DATA.contests.filter((c) => c.status === "Upcoming"))}</article>
+          <article class="card"><div class="spread"><h2>Individual contests</h2><a data-nav="contests" href="#contests">All</a></div>${contestRows(DATA.contests.filter((c) => c.status === "Upcoming"))}<div class="spread" style="margin-top:16px"><h2>Team contests</h2><a data-nav="team-contests" href="#team-contests">All</a></div>${contestRows(DATA.teamContests.filter((c) => c.status !== "Completed").slice(0, 2))}</article>
         </div>
         <div class="grid-2">
           <article class="card"><div class="spread"><h2>Announcements</h2><a data-nav="announcements" href="#announcements">View all</a></div>
@@ -155,13 +158,13 @@ addScreen({
 });
 
 addScreen({
-  id: "streak", order: 1400, group: "14 Streak", title: "Streak",
-  links: [["Dashboard", "dashboard"]],
+  id: "streak", order: 1400, group: "14 Streak", title: "Individual streak",
+  links: [["Team streak", "team-streak"], ["Dashboard", "dashboard"]],
   render() {
     const u = DATA.user;
     return appShell({
-      active: "dashboard", crumbs: [["Dashboard", "dashboard"], ["Streak"]],
-      content: pageHead("Streak") + `<div class="grid-2"><article class="card"><p class="stat-label">Current streak</p><p class="stat-value">${u.streak} days</p></article><article class="card"><p class="stat-label">Longest streak</p><p class="stat-value">${u.longest} days</p></article></div><article class="card stack"><h2>Activity</h2><p class="secondary">Last qualifying activity · ${u.lastActivity}</p>${heatCalendar()}</article>`,
+      active: "streak", crumbs: [["Individual streak"]],
+      content: pageHead("Individual streak", "Personal qualifying activity only. Team streak is separate.") + `<div class="cluster">${btn("Team streak", { variant: "outline", size: "sm", nav: "team-streak" })}</div><div class="grid-2"><article class="card"><p class="stat-label">Current streak</p><p class="stat-value">${u.streak} days</p></article><article class="card"><p class="stat-label">Longest streak</p><p class="stat-value">${u.longest} days</p></article></div><article class="card stack"><h2>Activity</h2><p class="secondary">Last qualifying activity · ${u.lastActivity}</p>${heatCalendar()}</article>`,
     });
   },
 });
@@ -178,7 +181,7 @@ addScreen({
           <article class="card"><div class="identity" style="padding:0 0 12px"><span class="avatar">${u.initials}</span><span><strong>${u.name}</strong><small>${u.email}</small></span></div>
             <dl class="kv"><dt>Codeforces</dt><dd class="mono">${u.cf}</dd><dt>LeetCode</dt><dd class="mono">${u.lc}</dd><dt>Account</dt><dd>${badge("active-account", "Active account")}</dd></dl>
           </article>
-          <article class="card stack"><h2>Standing</h2><p>Rating <strong class="num">${u.rating.toFixed(2)} / 5.00</strong></p><p>Streak <strong>${u.streak} days</strong> · longest ${u.longest}</p><p>Attendance <strong>${u.attendancePct}%</strong></p><p>Problems solved <strong>${u.solved}</strong></p>${btn("Update linked handles", { variant: "outline", size: "sm", nav: "link-handles" })}</article>
+          <article class="card stack"><h2>Standing</h2><p>Rating <strong class="num">${u.rating.toFixed(2)} / 5.00</strong></p><p>Individual streak <strong>${u.streak} days</strong> · longest ${u.longest}</p><p>Team <strong>${DATA.team.name}</strong> · streak <strong>${u.teamStreak} days</strong></p><p>Attendance <strong>${u.attendancePct}%</strong></p><p>Problems solved <strong>${u.solved}</strong></p>${btn("Update linked handles", { variant: "outline", size: "sm", nav: "link-handles" })}</article>
         </div>`,
     });
   },

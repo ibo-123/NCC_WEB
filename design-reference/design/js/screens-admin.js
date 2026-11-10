@@ -4,10 +4,10 @@ function admin(active, crumbsItems, content, extra = {}) {
 
 addScreen({
   id: "admin-dashboard", order: 1600, group: "16 Admin dashboard", title: "Overview",
-  links: [["Users", "admin-users"], ["Lectures", "admin-lectures"], ["Contests", "admin-contests"], ["Problems", "admin-problems"], ["Rating", "admin-rating"], ["Restricted", "admin-restricted"]],
+  links: [["Users", "admin-users"], ["Teams", "admin-teams"], ["Lectures", "admin-lectures"], ["Contests", "admin-contests"], ["Problems", "admin-problems"], ["Rating", "admin-rating"], ["Restricted", "admin-restricted"]],
   render() {
-    const stats = [["Students", "128"], ["Active", "121"], ["Restricted", "7"], ["Upcoming lectures", "3"], ["Attendance open", "1"], ["Upcoming contests", "1"], ["Problems", "120"], ["Average rating", "3.84"]];
-    return admin("admin-dashboard", [["Dashboard"]], pageHead("Administration", "What needs attention across the platform.") + `<div class="grid-4">${stats.map(([l, v]) => `<article class="card mini"><p class="stat-label">${l}</p><p class="stat-value num" style="font-size:26px">${v}</p></article>`).join("")}</div><article class="card"><h2>Recent activity</h2><ul class="timeline" style="margin-top:12px">${DATA.adminActivity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></article>`);
+    const stats = [["Students", "128"], ["Active", "121"], ["Restricted", "7"], ["Teams", "24"], ["Upcoming lectures", "3"], ["Attendance open", "1"], ["Team weeks", "1"], ["Average rating", "3.84"]];
+    return admin("admin-dashboard", [["Dashboard"]], pageHead("Administration", "Individual and Group competition on one platform.") + `<div class="grid-4">${stats.map(([l, v]) => `<article class="card mini"><p class="stat-label">${l}</p><p class="stat-value num" style="font-size:26px">${v}</p></article>`).join("")}</div><article class="card"><h2>Recent activity</h2><ul class="timeline" style="margin-top:12px">${DATA.adminActivity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></article>`);
   },
 });
 
@@ -161,8 +161,9 @@ addScreen({
   id: "admin-contests", order: 2100, group: "21 Admin contests", title: "Contests",
   links: [["Create", "admin-contest-new"], ["Publish", "admin-contest-publish"], ["Fetch results", "admin-results"]],
   render() {
-    const rows = DATA.contests.map((c) => ({ cells: [c.title, c.platform, `${c.date} · ${c.time}`, badge(statusKind(c.status), c.status), c.status === "Completed" ? "Published" : "Not fetched", menu([["Edit", "admin-contest-new"], ["Fetch results", "admin-results"], ["Publish", "admin-contest-publish"], ["Delete", "admin-contest-delete"]])] }));
-    return admin("admin-contests", [["Contests"]], pageHead("Contests", "", btn("Create contest", { icon: "plus", nav: "admin-contest-new" })) + smartTable(["Contest", "Platform", "Date", "Status", "Results", "Actions"], rows, 980));
+    const all = DATA.contests.concat(DATA.teamContests);
+    const rows = all.map((c) => ({ cells: [c.title, badge(c.mode === "team" ? "info" : "published", c.mode === "team" ? "Team" : "Individual"), c.platform, `${c.date} · ${c.duration}`, badge(statusKind(c.status), c.status), c.status === "Completed" ? "Published" : "Not fetched", menu([["Edit", "admin-contest-new"], ["Fetch results", "admin-results"], ["Publish", "admin-contest-publish"], ["Delete", "admin-contest-delete"]])] }));
+    return admin("admin-contests", [["Contests"]], pageHead("Contests", "Individual rounds and week-long Group contests.", btn("Create contest", { icon: "plus", nav: "admin-contest-new" })) + smartTable(["Contest", "Mode", "Platform", "When", "Status", "Results", "Actions"], rows, 1040));
   },
 });
 
@@ -170,7 +171,7 @@ addScreen({
   id: "admin-contest-new", order: 2110, group: "21 Admin contests", title: "Create contest",
   links: [["Contests", "admin-contests"]],
   render() {
-    return admin("admin-contests", [["Contests", "admin-contests"], ["Create"]], pageHead("Create contest") + `<form class="card stack"><div class="form-grid">${field({ label: "Title", value: "NCC_DSA Weekly Contest #04" })}${field({ label: "Platform", type: "select", options: ["Codeforces"], value: "Codeforces" })}<div class="span-2">${field({ label: "Description", type: "textarea", value: "Weekly rated practice on Codeforces." })}</div>${field({ label: "Codeforces contest ID", value: "123456" })}${field({ label: "Codeforces URL", type: "url", value: "https://codeforces.com/contest/123456" })}${field({ label: "Invitation link", type: "url", value: "https://codeforces.com/contest/123456" })}${field({ label: "Date", type: "date", value: "2026-10-19" })}${field({ label: "Time", type: "time", value: "15:30" })}${field({ label: "Duration (minutes)", type: "number", value: "120" })}${field({ label: "Publication", type: "select", options: ["Draft", "Published"], value: "Draft" })}</div><div class="cluster">${btn("Save draft", { variant: "outline", nav: "admin-contests" })}${btn("Publish", { nav: "admin-contest-publish" })}</div></form>`);
+    return admin("admin-contests", [["Contests", "admin-contests"], ["Create"]], pageHead("Create contest", "Choose Individual or Team (Group). Team weeks default to 10080 minutes.") + `<form class="card stack"><div class="form-grid">${field({ label: "Title", value: "Team Week #07 — DP" })}${field({ label: "Mode", type: "select", options: ["individual", "team"], value: "team" })}${field({ label: "Platform", type: "select", options: ["Codeforces"], value: "Codeforces" })}${field({ label: "Publication", type: "select", options: ["Draft", "Published"], value: "Draft" })}<div class="span-2">${field({ label: "Description", type: "textarea", value: "Week-long team competition. Standings are fetched from Codeforces after the window ends." })}</div>${field({ label: "Codeforces contest ID", value: "124200" })}${field({ label: "Codeforces URL", type: "url", value: "https://codeforces.com/contest/124200" })}${field({ label: "Invitation link", type: "url", value: "https://codeforces.com/contest/124200" })}${field({ label: "Starts", type: "date", value: "2026-10-20" })}${field({ label: "Time", type: "time", value: "00:00" })}${field({ label: "Duration (minutes)", type: "number", value: "10080", hint: "Team week = 7 days. Individual rounds often use 120." })}</div><div class="cluster">${btn("Save draft", { variant: "outline", nav: "admin-contests" })}${btn("Publish", { nav: "admin-contest-publish" })}</div></form>`);
   },
 });
 
@@ -190,7 +191,7 @@ function resultsAdmin(state) {
   const banner = {
     idle: `<article class="card stack"><h2>Contest results</h2><p><strong>NCC_DSA Weekly Contest #04</strong></p>${field({ label: "Codeforces contest ID", value: "123456" })}${btn("Fetch results", { icon: "refresh", nav: "admin-results-loading" })}<p class="caption">Last fetch: not yet run for this round.</p></article>`,
     loading: `<article class="card status-panel"><span class="spinner"></span><h2>Fetching contest results...</h2><p class="secondary">Codeforces contest 123456</p></article>`,
-    ok: `<div class="callout ok"><strong>Results fetched successfully</strong>Participants processed: 42. Matched NCC_DSA users: 37.</div>`,
+    ok: `<div class="callout ok"><strong>Results fetched successfully</strong>Participants processed: 42. Matched NCC_DSA users: 37. For team mode, TeamContestResult rows are derived next (teams matched: 8).</div>`,
     error: `<div class="callout danger" role="alert"><strong>Unable to fetch Codeforces results.</strong>Please check the contest information and try again.</div>`,
   }[state];
   const table = state === "ok" || state === "idle" ? smartTable(["Rank", "Participant", "Handle", "Score", "Penalty", "Match"], DATA.board.slice(0, 6).map((r) => ({ className: r[1] === "Ibrahim Kedir" ? "is-me" : "", cells: [`#${r[0]}`, r[1], `<span class="mono">${r[2]}</span>`, r[3], r[4], badge("solved", "Matched")] })), 860) : "";

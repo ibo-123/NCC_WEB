@@ -2,6 +2,8 @@
 
 Next.js 15 (App Router, JavaScript), React 19, Tailwind CSS v4, MongoDB (Mongoose), Zod, opaque server-side sessions. The engineering contracts for the six-account Claude team are in `docs/`.
 
+**Product modes:** the platform has an **Individual** track and a **Group (team)** track. Students create teams, join week-duration Codeforces team contests, and see both an individual streak and a team streak. See `DECISIONS.md` §10.
+
 ## Documents
 | Document | Status |
 |---|---|

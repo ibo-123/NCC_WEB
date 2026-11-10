@@ -5,7 +5,13 @@
 Status words (`APPROVED`, `PROPOSED`, `OPEN`, `UNVERIFIED`) are defined in `DECISIONS.md` §1. Nothing here claims a build, install, lint, test or render has passed. None was run for this revision.
 
 ## 1. Product
-NCC DSA Platform supports student accounts, learning resources, problems, attendance, contests, progress and rating workflows, notifications and administrator workflows. The prototype in `design-reference/design` is the visual and product reference. It contains real routes and interaction states; do not treat every prototype state as a URL.
+NCC DSA Platform supports student accounts, learning resources, problems, attendance, contests, progress and rating workflows, notifications and administrator workflows.
+
+**Competition is split into two tracks** (`DECISIONS.md` §10, PENDING):
+- **Individual** — personal contests, personal progress, individual streak, personal rating.
+- **Group** — student-created teams, week-duration team contests whose standings are derived after a Codeforces fetch, and team streak (shown beside the individual streak).
+
+Learning (announcements, lectures, attendance, topics/problems) is shared across both tracks. The prototype in `design-reference/design` is the visual and product reference. It contains real routes and interaction states; do not treat every prototype state as a URL.
 
 ## 2. Technical baseline — APPROVED
 Next.js 15 App Router, React 19, JavaScript (not TypeScript), Tailwind CSS v4, MongoDB Atlas with Mongoose, Zod, opaque server-side sessions (hashed tokens), bcryptjs, Vitest, Playwright, dark theme default with a persisted toggle. Do not introduce TypeScript, Prisma, PostgreSQL, a separate Express server or another framework without lead approval.
@@ -219,7 +225,7 @@ Every authenticated request is in exactly one state, evaluated from the database
 |---|---|---|
 | `auth.me`, `auth.logout` | ✓ | ✓ |
 | `auth.2fa.verify` (state-gated, §7.2; only when `ADMIN_2FA_ENABLED`) | — | ✓ |
-| `profile.handles.update`, `dashboard.read`, `announcements.read`, `notifications.read`, `lectures.read`, `attendance.checkin`, `attendance.read`, `progress.read`, `problems.read`, `problems.check`, `contests.read`, `results.read`, `rating.read`, `streak.read` | ✓ | — |
+| `profile.handles.update`, `dashboard.read`, `announcements.read`, `notifications.read`, `lectures.read`, `attendance.checkin`, `attendance.read`, `progress.read`, `problems.read`, `problems.check`, `contests.read`, `results.read`, `rating.read`, `streak.read`, `teams.read`, `teams.manage` | ✓ | — |
 | `admin.dashboard.read`, `users.read`, `auditlog.read` | — | ✓ |
 | `users.restrict`, `users.reopen` | — | ✓ |
 | `announcements.manage`, `announcements.publish`, `announcements.delete` | — | ✓ |
@@ -227,6 +233,7 @@ Every authenticated request is in exactly one state, evaluated from the database
 | `attendance.manage` (start, close), `attendance.admin.read` | — | ✓ |
 | `topics.manage`, `topics.delete`, `problems.manage`, `problems.publish`, `problems.delete` | — | ✓ |
 | `contests.manage`, `contests.publish`, `contests.delete`, `results.fetch`, `results.publish` | — | ✓ |
+| `teams.admin.read`, `teams.admin.manage` | — | ✓ |
 | `rating.admin.read`, `rating.recalculate`, `progress.admin.read` | — | ✓ |
 | `twofa.enroll` (only when `ADMIN_2FA_ENABLED`) | — | ✓ |
 
@@ -262,7 +269,9 @@ The catalog is final only when `API_CONTRACT.md` is approved; that document must
 | `BCRYPT_COST` | no | interim 12; **UNVERIFIED** until benchmarked on the host | T19 |
 | `RESTRICTED_CONTACT_EMAIL` | yes in production (restricted-contact scope, §8.2) | one email address; no default; the prototype's address is not hard-coded | B20 |
 | `RATING_WARNING_THRESHOLD`, `RESTRICTION_RATING_THRESHOLD` | no | unset = no warning, no automatic restriction | B2 seam |
-| `STREAK_QUALIFYING_TYPES` | no | unset = streak disabled | B5 seam |
+| `STREAK_QUALIFYING_TYPES` | no | unset = individual and team streak surfaces disabled | B5 / B25 seam |
+| `TEAM_MAX_MEMBERS` | no | `5` | B23 PROPOSED |
+| `TEAM_WEEKLY_CONTEST_MINUTES` | no | `10080` (7 days) | B24 PROPOSED |
 | `CODEFORCES_API_KEY`, `CODEFORCES_API_SECRET` | no | from the audit; whether the integration needs them is UNVERIFIED | A6 to confirm |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | seed script only | never read by the app at runtime | A3 |
 | Rate-limit settings | — | names and values are defined in `AUTH_AND_SECURITY.md` | batch D |

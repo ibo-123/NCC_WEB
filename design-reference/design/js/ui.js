@@ -155,23 +155,32 @@ function heatCalendar() {
 }
 
 const USER_NAV = [
-  { items: [
+  { section: "Shared", items: [
     ["dashboard", "Dashboard", "dashboard"],
     ["announcements", "Announcements", "megaphone"],
     ["lectures", "Lectures", "book"],
     ["attendance", "Attendance", "check"],
-    ["contests", "Contests", "trophy"],
-    ["results", "Results", "chart"],
     ["progress", "Progress", "chart"],
     ["rating", "Rating", "star"],
     ["profile", "Profile", "user"],
+  ]},
+  { section: "Individual", items: [
+    ["contests", "Contests", "trophy"],
+    ["results", "Results", "chart"],
+    ["streak", "My streak", "flame"],
+  ]},
+  { section: "Group", items: [
+    ["teams", "My team", "users"],
+    ["team-contests", "Team contests", "trophy"],
+    ["team-results", "Team results", "chart"],
+    ["team-streak", "Team streak", "flame"],
   ]},
 ];
 PATHS.star = '<path d="m12 3 2.4 5.2L20 9l-4 3.8.9 5.7L12 16.8 7.1 18.5 8 12.8 4 9l5.6-.8L12 3z"/>';
 
 const ADMIN_NAV = [
   { section: "Overview", items: [["admin-dashboard", "Dashboard", "dashboard"]] },
-  { section: "People", items: [["admin-users", "Users", "users"], ["admin-restricted", "Restricted", "lock"]] },
+  { section: "People", items: [["admin-users", "Users", "users"], ["admin-restricted", "Restricted", "lock"], ["admin-teams", "Teams", "users"]] },
   { section: "Learning", items: [["admin-announcements", "Announcements", "megaphone"], ["admin-lectures", "Lectures", "book"], ["admin-attendance", "Attendance", "check"]] },
   { section: "Competition", items: [["admin-contests", "Contests", "trophy"], ["admin-results", "Results", "chart"]] },
   { section: "Practice", items: [["admin-problems", "Problems", "book"], ["admin-topics", "Topics", "filter"], ["admin-progress", "Progress", "chart"]] },
@@ -241,5 +250,10 @@ function lectureRows() {
 }
 
 function contestRows(items) {
-  return items.map((c) => `<div class="list-row"><div><strong>${c.title}</strong><div class="caption">${c.platform} · ${c.date} · ${c.time} · ${c.duration}</div><div class="cluster" style="margin-top:6px">${badge(statusKind(c.status), c.status)}${c.invited ? badge("info", "Invited") : ""}</div></div>${btn(c.status === "Completed" ? "View results" : "Open", { variant: "outline", size: "sm", nav: c.status === "Completed" ? "results" : c.nav })}</div>`).join("");
+  return items.map((c) => `<div class="list-row"><div><strong>${c.title}</strong><div class="caption">${c.platform} · ${c.mode || "individual"} · ${c.date} · ${c.time} · ${c.duration}</div><div class="cluster" style="margin-top:6px">${badge(statusKind(c.status), c.status)}${c.mode === "team" ? badge("info", "Team") : badge("published", "Individual")}${c.invited ? badge("info", "Invited") : ""}</div></div>${btn(c.status === "Completed" ? "View results" : "Open", { variant: "outline", size: "sm", nav: c.status === "Completed" ? (c.mode === "team" ? "team-results" : "results") : c.nav })}</div>`).join("");
+}
+
+function modeTabs(active) {
+  const tabs = [["Individual", "contests"], ["Group", "team-contests"]];
+  return `<div class="cluster" role="tablist" aria-label="Competition mode">${tabs.map(([label, id]) => `<a class="btn ${active === id ? "btn-primary" : "btn-outline"} btn-sm" data-nav="${id}" href="#${id}" role="tab" aria-selected="${active === id}">${label}</a>`).join("")}</div>`;
 }

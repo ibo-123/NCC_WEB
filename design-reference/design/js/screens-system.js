@@ -7,13 +7,13 @@ addScreen({
       <div class="side-head" style="padding:0"><span class="mark">N</span><span><span class="brand-name">NCC_DSA</span><span class="brand-sub">Platform</span></span></div>
       <div>
         <p class="kicker">Visual specification</p>
-        <h1>A complete interface for practice, contests, and account standing.</h1>
-        <p class="secondary" style="margin-top:8px;max-width:62ch">Use the page list to move through every screen. Switch theme and width from the toolbar. Sample student: Ibrahim Kedir.</p>
+        <h1>Individual practice and Group competition on one platform.</h1>
+        <p class="secondary" style="margin-top:8px;max-width:62ch">Students keep one account. Contests and streaks split into Individual and Team tracks. Sample student: Ibrahim Kedir · team Binary Hawks.</p>
       </div>
       <div class="grid-3">
-        <article class="card"><h3>Clear first</h3><p class="secondary" style="margin-top:6px">Status, rating, and the next action stay ahead of history.</p></article>
-        <article class="card"><h3>Both themes</h3><p class="secondary" style="margin-top:6px">Light for rooms. Dark for long practice sessions.</p></article>
-        <article class="card"><h3>Four widths</h3><p class="secondary" style="margin-top:6px">1440, 1280, 768, and 390. Layouts change; they do not only scale.</p></article>
+        <article class="card"><h3>Individual</h3><p class="secondary" style="margin-top:6px">Personal contests, progress, rating, and individual streak.</p></article>
+        <article class="card"><h3>Group</h3><p class="secondary" style="margin-top:6px">Create a team, run week-long Codeforces team contests, track team streak.</p></article>
+        <article class="card"><h3>Shared learning</h3><p class="secondary" style="margin-top:6px">Lectures, attendance, and problem sheets stay shared across both modes.</p></article>
       </div>
       <div class="page-index">${tiles}</div>
     </div>`;
@@ -119,8 +119,8 @@ addScreen({
   id: "user-flow", order: 2900, group: "29 User flow", title: "User journey",
   links: [["Login", "login"], ["Dashboard", "dashboard"]],
   render() {
-    const steps = [["Register", "register"], ["Login", "login"], ["User dashboard", "dashboard"], ["Announcement", "announcements"], ["Lecture", "lecture-detail"], ["Live session", "lecture-live"], ["Attendance", "attendance-code"], ["Contest", "contest-detail"], ["Contest result", "results"], ["Progress sheet", "progress"], ["Problem", "problem"], ["I solved this", "verify-pending"], ["Verification", "verify-ok"], ["Rating", "rating"], ["Streak", "streak"], ["Warning", "rating-warning"], ["Restriction", "restricted"], ["Admin review", "admin-restricted"], ["Reopen access", "admin-reopen"]];
-    return `<div class="spec-board"><p class="kicker">User flow</p><h1>From registration to restored access</h1><p class="secondary">Each step opens that screen. Restriction is the locked state. Reopen is an admin action.</p>${flow(steps)}</div>`;
+    const steps = [["Register", "register"], ["Login", "login"], ["User dashboard", "dashboard"], ["Announcement", "announcements"], ["Lecture", "lecture-detail"], ["Attendance", "attendance-code"], ["Create / join team", "teams"], ["Individual contest", "contest-detail"], ["Team week contest", "team-contest-active"], ["Team results", "team-results"], ["Progress", "progress"], ["Problem verify", "verify-ok"], ["Rating", "rating"], ["Individual streak", "streak"], ["Team streak", "team-streak"], ["Restriction", "restricted"], ["Admin reopen", "admin-reopen"]];
+    return `<div class="spec-board"><p class="kicker">User flow</p><h1>Individual and Group paths on one account</h1><p class="secondary">Learning stays shared. Competition splits into personal rounds and week-long team contests.</p>${flow(steps)}</div>`;
   },
 });
 
@@ -131,7 +131,7 @@ addScreen({
     return `<div class="spec-board"><p class="kicker">Admin flow</p><h1>Run the platform from one shell</h1>
       ${flow([["Admin login", "admin-login"], ["Admin dashboard", "admin-dashboard"], ["Manage users", "admin-users"]])}
       <div class="flow-branch" style="margin-top:16px">
-        ${[["Lectures", "admin-lectures"], ["Start attendance", "admin-attendance-start"], ["Announcements", "admin-announcements"], ["Contests", "admin-contests"], ["Fetch results", "admin-results"], ["Publish results", "admin-results-publish"], ["Problems", "admin-problems"], ["Progress", "admin-progress"], ["Rating", "admin-rating"], ["Restricted users", "admin-restricted"], ["Reopen account", "admin-reopen"]].map(([t, id]) => `<a class="flow-step" data-nav="${id}" href="#${id}">${t}</a>`).join("")}
+        ${[["Lectures", "admin-lectures"], ["Start attendance", "admin-attendance-start"], ["Announcements", "admin-announcements"], ["Teams", "admin-teams"], ["Contests", "admin-contests"], ["Fetch Codeforces", "admin-results"], ["Publish results", "admin-results-publish"], ["Problems", "admin-problems"], ["Progress", "admin-progress"], ["Rating", "admin-rating"], ["Restricted users", "admin-restricted"], ["Reopen account", "admin-reopen"]].map(([t, id]) => `<a class="flow-step" data-nav="${id}" href="#${id}">${t}</a>`).join("")}
       </div>
     </div>`;
   },

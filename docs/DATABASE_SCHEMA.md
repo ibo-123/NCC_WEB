@@ -25,7 +25,8 @@ Owner of all models: A3. "Writer" is the account whose services write the model.
 | Session | A4 | Hashed opaque session |
 | Topic, Problem, ProblemVerification | A6 | Learning content and solve checks |
 | Lecture, AttendanceSession, AttendanceRecord, Announcement, Notification | A5 | Learning, attendance, announcements, in-app notifications |
-| Contest, ContestResult, RatingHistory, ActivityEvent | A6 | Contests, rating, activity |
+| Contest, ContestResult, RatingHistory, ActivityEvent | A6 | Contests (individual and team), rating, activity |
+| Team, TeamMembership, TeamContestResult | A6 | Group mode: teams and derived team standings (`DECISIONS.md` §10, T25 PENDING) |
 | AuditLog | A3 helper, called by every writer | Admin and security mutation history |
 | RateLimit | A4 | Durable rate-limit counters and lockouts |
 
@@ -41,14 +42,18 @@ These are the only permitted values. No spelling variants.
 | `Announcement.status`, `Lecture.status`, `Problem.status` | `draft`, `published` | No scheduled publishing (T8). |
 | `Contest.publication` | `draft`, `published` | |
 | `Contest.resultsState` | `not_fetched`, `fetched`, `published` | |
-| Contest status (upcoming, active, completed) | derived, **not stored** | Computed from `startsAt` and `durationMinutes`. |
+| `Contest.mode` | `individual`, `team` | Default `individual`. Team mode is the Group track (B22, B24, T25 PENDING). |
+| Contest status (upcoming, active, completed) | derived, **not stored** | Computed from `startsAt` and `durationMinutes`. Week-long team contests use `durationMinutes` 10080 unless config sets another value (B24). |
+| `Team.status` | `active`, `disbanded` | B23 PENDING |
+| `TeamMembership.role` | `captain`, `member` | B23 PENDING |
+| `TeamMembership.status` | `active`, `left` | One active membership per student in v1 (B23). |
 | `ProblemVerification.status` | `pending`, `solved`, `failed` | "Not solved" means no document. `solved` is a provisional solve check (B8), never ownership proof. |
 | `Problem.platform` | `codeforces`, `leetcode` | |
 | `Contest.platform` | `codeforces` | |
 | `Lecture.resources[].type` | `pdf`, `link`, `file` | `file` is a label for a downloadable URL (B13). |
 | `Announcement.type` | `general`, `important`, `contest`, `lecture`, `attendance` | A |
 | `RatingHistory.source` | `initial`, `scheduled`, `manual` | T15 |
-| `ActivityEvent.type` | `problem_solved`, `attendance`, `contest_result`, `rating_change` | Recorded types only. Which types qualify for a streak is OPEN (B5). |
+| `ActivityEvent.type` | `problem_solved`, `attendance`, `contest_result`, `rating_change`, `team_contest_result` | Recorded types only. Which types qualify for individual or team streaks is OPEN (B5, B25). |
 
 `Topic` has no status. Lecture state (upcoming, live, completed) is **not stored**: one server function derives it (T7), and its rules are OPEN (B12).
 
@@ -184,19 +189,20 @@ Indexes: unique `{ sessionId: 1, userId: 1 }` (A, P). Duplicate check-in is reje
 | Field | Definition | Source |
 |---|---|---|
 | `title`, `description` | String | A |
+| `mode` | Enum §3, default `individual` | T25, B22, B24 PENDING |
 | `platform` | Enum §3 (`codeforces`) | A |
 | `platformContestId` | String or Number as the platform defines it | A |
 | `url` | String | A |
 | `invitationUrl` | String?. A plain link field. There is no invitation model (B11). | A, B11 |
 | `startsAt` | Date (UTC), required | A |
-| `durationMinutes` | Number, required (contest length, used for the derived status) | A |
+| `durationMinutes` | Number, required (contest length, used for the derived status). Team weekly contests use the configured week length (PROPOSED 10080). | A, B24 |
 | `publication` | Enum §3, default `draft` | A, T8 |
 | `resultsState` | Enum §3, default `not_fetched` | A, T8 |
 | `lastFetchedAt` | Date? | A |
-| `fetchSummary` | `{ processed: Number, matched: Number, unmatchedHandles: [String] }`. The size cap on `unmatchedHandles` is not defined by any source (§8). | A, T14 |
+| `fetchSummary` | `{ processed: Number, matched: Number, unmatchedHandles: [String], teamsMatched?: Number }`. The size cap on `unmatchedHandles` is not defined by any source (§8). | A, T14, B24 |
 | `deletedAt` | Date? | A, T9 |
 
-Indexes: none are specified by any approved source. Proposed additions follow the §1 change rule.
+Indexes: none are specified by any approved source. Proposed: `{ mode: 1, publication: 1, startsAt: -1 }` for list filters.
 
 ### 4.10 ContestResult
 Stores source-provided values as fetched (B10). No scoring or ranking policy is applied.
@@ -211,7 +217,7 @@ Stores source-provided values as fetched (B10). No scoring or ranking policy is 
 | `penalty` | Number, as provided by the source | A, B10 |
 | `fetchedAt` | Date | A |
 
-Indexes: unique `{ contestId: 1, userId: 1 }` (A). Re-fetch before publish is an idempotent upsert on this key (T14). Students see results only when `Contest.resultsState` is `published` (A).
+Indexes: unique `{ contestId: 1, userId: 1 }` (A). Re-fetch before publish is an idempotent upsert on this key (T14). Students see results only when `Contest.resultsState` is `published` (A). For `mode: team` contests, member rows are still stored here; team aggregates are in §4.18.
 
 ### 4.11 RatingHistory
 Auditable rating changes (T15). **No formula is defined or implied (B1).**
@@ -236,10 +242,11 @@ Indexes: `{ userId: 1, computedAt: -1 }` (A). Rule: the `User.ratingCurrent` cac
 | `userId` | ref User, required | A |
 | `type` | Enum §3 | A |
 | `refId` | ObjectId of the source record, required | A, T16 |
+| `teamId` | ref Team? Set only for team-scoped events (T25 PENDING) | B25 |
 | `occurredAt` | Date, server time | A |
 | `day` | String `YYYY-MM-DD`, the **campus-time-zone** calendar day of `occurredAt` (T16). The `YYYY-MM-DD` string representation is approved by the lead (Lead B1). If the campus time zone (B17, PROPOSED) changes, stored `day` values must be recomputed. | A, T16, Lead B1 |
 
-Indexes: unique `{ userId: 1, type: 1, refId: 1 }` (T16). Written only by the owning services; client-submitted events are never authoritative (P). Which types count toward a streak, and any link to rating, are OPEN (B5).
+Indexes: unique `{ userId: 1, type: 1, refId: 1 }` (T16); `{ teamId: 1, day: 1 }` when `teamId` is present. Written only by the owning services; client-submitted events are never authoritative (P). Which types count toward an individual or team streak, and any link to rating, are OPEN (B5, B25).
 
 ### 4.13 Announcement
 | Field | Definition | Source |
@@ -297,6 +304,48 @@ Required, not optional: attendance attempt counters and rate limits are Mongo-ba
 
 Indexes: `key` unique (**derived**: no source states uniqueness; it supports the atomic-update requirement, T5, T23, P); `expiresAt` **TTL** with `expireAfterSeconds: 0` (A, B16). Updates are atomic (`findOneAndUpdate` or equivalent), never read-then-write.
 
+### 4.17 Team (T25, B23 PENDING)
+| Field | Definition | Source |
+|---|---|---|
+| `name` | String, required, trimmed | B23 |
+| `slug` | String, required, unique among non-deleted teams | B23 |
+| `inviteCode` | String, required, unique among active teams; generated server-side | B23 |
+| `captainId` | ref User, required | B23 |
+| `status` | Enum §3, default `active` | B23 |
+| `memberCount` | Number, cache of active memberships; written only by team services | B23 |
+| `streakCurrent`, `streakLongest` | Number?, cache of the team streak when B5/B25 enable it; otherwise null / unused | B25 |
+| `deletedAt` | Date? | T9, T25 |
+
+Indexes: unique `slug` among non-deleted (partial); unique `inviteCode` among `status: active` (partial). **UNVERIFIED** until A3 validates.
+
+### 4.18 TeamMembership (T25, B23 PENDING)
+| Field | Definition | Source |
+|---|---|---|
+| `teamId` | ref Team, required | B23 |
+| `userId` | ref User, required | B23 |
+| `role` | Enum §3 | B23 |
+| `status` | Enum §3, default `active` | B23 |
+| `joinedAt` | Date, required | B23 |
+| `leftAt` | Date? | B23 |
+
+Indexes: unique `{ teamId: 1, userId: 1 }`; unique partial `{ userId: 1 }` where `status: "active"` (one active team per student in v1).
+
+### 4.19 TeamContestResult (T25, B24 PENDING)
+Derived after a Codeforces fetch for `Contest.mode = team`. Member source rows remain in `ContestResult`.
+
+| Field | Definition | Source |
+|---|---|---|
+| `contestId` | ref Contest, required | B24 |
+| `teamId` | ref Team, required | B24 |
+| `points` | Number, derived aggregate (rule OPEN) | B24 |
+| `penalty` | Number?, derived if the aggregation uses it | B24 |
+| `rank` | Number?, assigned when results are published | B24 |
+| `memberCount` | Number, active members counted at fetch | B24 |
+| `matchedMembers` | Number, members with a matched Codeforces row | B24 |
+| `fetchedAt` | Date | B24 |
+
+Indexes: unique `{ contestId: 1, teamId: 1 }`. Students see these only when `Contest.resultsState` is `published`.
+
 ## 5. Encrypted storage (T4)
 Algorithm, key handling, key selection and the matching-context rule are defined in `MASTER_ARCHITECTURE.md` §8.3 and are **not restated or changed here**. Stored form for both fields: `v1.<keyId>.<iv>.<tag>.<ciphertext>` (base64url). A schema validator checks the shape `^v1\.[0-9a-f]{8}(\.[A-Za-z0-9_-]+){3}$`. The associated-data context is **not stored**; the caller reconstructs it.
 
@@ -320,6 +369,8 @@ User 1─* AttendanceRecord *─1 AttendanceSession *─1 Lecture
 AttendanceRecord *─1 Lecture            (lectureId, copy of the session's)
 User 1─* ProblemVerification *─1 Problem *─1 Topic     (one topic per problem)
 User 1─* ContestResult *─1 Contest
+Team 1─* TeamMembership *─1 User
+Team 1─* TeamContestResult *─1 Contest
 User 1─* RatingHistory
 User 1─* Notification
 User 1─* ActivityEvent
@@ -346,7 +397,8 @@ Effects on related records:
 | Topic | Refused with 409 `INVALID_STATE` while it has any non-deleted problem (T9). | Its problems are already deleted and keep `topicId`. Its slug becomes reusable by a new topic (Lead B3, §4.3); the soft-deleted record is preserved. |
 | Problem | Allowed. | `ProblemVerification` kept. The problem leaves lists and is excluded from raw solved and total counts (B18 raw counts only). |
 | Lecture | **Refused** while any attendance session of the lecture has `closedAt: null`, including an expired one (Lead A2). The admin must close it first (`attendance.manage`, `MASTER_ARCHITECTURE.md` §7.3). Otherwise allowed. The refusal's response contract is not defined here (batch E). | `AttendanceSession` and `AttendanceRecord` are kept. Check-in is impossible because the lecture is not found. How a deleted lecture counts in an attendance percentage is OPEN (B4); the percentage is `null` in v1, so nothing depends on it. |
-| Contest | Allowed. | `ContestResult` kept but hidden from students. `ActivityEvent` and `RatingHistory` are untouched. |
+| Contest | Allowed. | `ContestResult` and `TeamContestResult` kept but hidden from students. `ActivityEvent` and `RatingHistory` are untouched. |
+| Team | Allowed (disband sets `status: disbanded` and `deletedAt`). | Active memberships set to `left`. `TeamContestResult` kept but hidden once the team is soft-deleted. |
 | Announcement | Allowed. | `Notification` rows kept. Opening the announcement returns `NOT_FOUND`. |
 
 ## 8. Details no source defines
