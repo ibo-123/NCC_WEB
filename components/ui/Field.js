@@ -2,11 +2,7 @@ import { useId } from "react";
 import { cx } from "./cx.js";
 
 const CONTROL =
-<<<<<<< HEAD
   "w-full min-h-10 rounded-xl border bg-surface px-3.5 py-2 text-fg " +
-=======
-  "w-full min-h-10 rounded-lg border bg-surface px-3 py-2 text-fg " +
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
   "focus:border-primary focus:shadow-[0_0_0_3px_var(--focus-ring)] focus:outline-none " +
   "disabled:bg-sunken disabled:text-muted";
 

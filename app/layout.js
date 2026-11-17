@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-<<<<<<< HEAD
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { DEFAULT_THEME, normalizeTheme, THEME_COOKIE } from "@/lib/theme.js";
 import { PlatformProvider } from "@/components/providers/PlatformProvider.js";
@@ -26,14 +25,6 @@ export const metadata = {
     title: "NCC_DSA Platform",
     description: "Individual practice and Group competition on one platform.",
   },
-=======
-import { DEFAULT_THEME, normalizeTheme, THEME_COOKIE } from "@/lib/theme.js";
-import "./globals.css";
-
-export const metadata = {
-  title: "NCC DSA",
-  description: "NCC DSA Platform",
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
 };
 
 export default async function RootLayout({ children }) {
@@ -41,15 +32,10 @@ export default async function RootLayout({ children }) {
   const store = await cookies();
   const theme = normalizeTheme(store.get(THEME_COOKIE)?.value ?? DEFAULT_THEME);
   return (
-<<<<<<< HEAD
     <html lang="en" data-theme={theme} className={`${jakarta.variable} ${jetbrains.variable}`}>
       <body className="antialiased">
         <PlatformProvider>{children}</PlatformProvider>
       </body>
-=======
-    <html lang="en" data-theme={theme}>
-      <body className="antialiased">{children}</body>
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
     </html>
   );
 }

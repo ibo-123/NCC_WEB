@@ -4,17 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-<<<<<<< HEAD
   Award,
   BarChart3,
-=======
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
   Bell,
   BookOpen,
   CalendarCheck,
   ClipboardList,
   Code,
-<<<<<<< HEAD
   Flame,
   LayoutDashboard,
   Lock,
@@ -26,13 +22,6 @@ import {
   Star,
   Trophy,
   User,
-=======
-  LayoutDashboard,
-  Megaphone,
-  Menu,
-  Settings,
-  Trophy,
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
   Users,
   Video,
   X,
@@ -53,7 +42,6 @@ const ICONS = {
   users: Users,
   audit: ClipboardList,
   settings: Settings,
-<<<<<<< HEAD
   progress: BarChart3,
   rating: Star,
   profile: User,
@@ -66,18 +54,12 @@ const ICONS = {
 
 function isActive(pathname, href) {
   if (href === "/admin") return pathname === "/admin";
-=======
-};
-
-function isActive(pathname, href) {
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /**
  * Application frame: sidebar (a slide-over drawer under 800 px), top bar with breadcrumbs and theme toggle, content.
  *
-<<<<<<< HEAD
  * brand:             { name, sub?, mark?, href? }
  * sections:          [{ title?, items: [{ href, label, icon? }] }]
  * user:              { name, detail?, initials? } | undefined
@@ -96,15 +78,6 @@ export function AppShell({
   profileHref,
   children,
 }) {
-=======
- * brand:        { name, sub?, mark? }
- * sections:     [{ title?, items: [{ href, label, icon? }] }]
- * user:         { name, detail?, initials? } | undefined
- * breadcrumbs:  [{ label, href? }]  (the last item is the current page)
- * footer:       optional node rendered at the bottom of the sidebar
- */
-export function AppShell({ brand, sections, user, breadcrumbs = [], footer, children }) {
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
 
@@ -118,11 +91,7 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
   }, [open]);
 
   return (
-<<<<<<< HEAD
     <div className="ncc-ambient-glow min-h-screen bg-bg text-fg min-[800px]:grid min-[800px]:grid-cols-[248px_1fr]">
-=======
-    <div className="min-h-screen bg-bg text-fg min-[800px]:grid min-[800px]:grid-cols-[248px_1fr]">
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
       <aside
         id="app-nav"
         aria-label="Main navigation"
@@ -133,7 +102,6 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
         )}
       >
         <div className="flex items-center gap-2.5 px-2 pt-1 pb-3">
-<<<<<<< HEAD
           {brand.href ? (
             <Link href={brand.href} className="flex items-center gap-2.5 text-inherit no-underline">
               <span className="grid size-8 flex-none place-items-center rounded-xl bg-primary font-bold text-primary-text">
@@ -159,40 +127,19 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
               </span>
             </>
           )}
-=======
-          <span className="grid size-8 flex-none place-items-center rounded-lg bg-primary font-semibold text-primary-text">
-            {brand.mark ?? brand.name.slice(0, 1)}
-          </span>
-          <span className="leading-[1.1] font-semibold tracking-tight">
-            {brand.name}
-            {brand.sub ? (
-              <span className="block text-[11px] font-medium tracking-wide text-sidebar-muted uppercase">{brand.sub}</span>
-            ) : null}
-          </span>
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
           <button
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close navigation"
-<<<<<<< HEAD
             className="ml-auto grid size-9 cursor-pointer place-items-center rounded-xl text-sidebar-fg hover:bg-sidebar-hover min-[800px]:hidden"
-=======
-            className="ml-auto grid size-9 cursor-pointer place-items-center rounded-lg text-sidebar-fg hover:bg-sidebar-hover min-[800px]:hidden"
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
           >
             <X aria-hidden="true" size={18} />
           </button>
         </div>
 
-<<<<<<< HEAD
         <nav className="flex flex-col gap-0.5">
           {sections.map((section, i) => (
             <div key={section.title ?? i} className="flex flex-col gap-0.5">
-=======
-        <nav className="flex flex-col gap-1">
-          {sections.map((section, i) => (
-            <div key={section.title ?? i} className="flex flex-col gap-1">
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
               {section.title ? (
                 <p className="mx-2.5 mt-3.5 mb-1 text-[11px] font-semibold tracking-widest text-sidebar-muted uppercase">
                   {section.title}
@@ -208,7 +155,6 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-<<<<<<< HEAD
                       "flex min-h-10 items-center gap-2.5 rounded-xl border px-2.5 py-2 text-sm font-medium whitespace-nowrap no-underline transition-colors duration-150",
                       active
                         ? "border-primary/30 bg-sidebar-active text-sidebar-active-fg"
@@ -217,14 +163,6 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
                   >
                     {Icon ? <Icon aria-hidden="true" size={17} className={active ? "text-primary" : "text-sidebar-muted"} /> : null}
                     <span className="truncate">{item.label}</span>
-=======
-                      "flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium no-underline",
-                      active ? "bg-sidebar-active text-sidebar-active-fg" : "text-sidebar-fg hover:bg-sidebar-hover",
-                    )}
-                  >
-                    {Icon ? <Icon aria-hidden="true" size={18} className={active ? "text-primary" : undefined} /> : null}
-                    {item.label}
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
                   </Link>
                 );
               })}
@@ -245,22 +183,14 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
       ) : null}
 
       <div className="flex min-w-0 flex-col">
-<<<<<<< HEAD
         <header className="flex h-16 items-center gap-3 border-b border-border bg-topbar/90 px-6 backdrop-blur-sm max-[480px]:px-3">
-=======
-        <header className="flex h-14 items-center gap-3 border-b border-border bg-topbar px-5 max-[480px]:px-3">
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Open navigation"
             aria-expanded={open}
             aria-controls="app-nav"
-<<<<<<< HEAD
             className="grid size-10 cursor-pointer place-items-center rounded-xl border border-border bg-surface text-fg min-[800px]:hidden"
-=======
-            className="grid size-10 cursor-pointer place-items-center rounded-lg border border-border bg-surface text-fg min-[800px]:hidden"
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
           >
             <Menu aria-hidden="true" size={18} />
           </button>
@@ -275,11 +205,7 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
                         {crumb.label}
                       </span>
                     ) : (
-<<<<<<< HEAD
                       <Link href={crumb.href} className="text-fg-2 no-underline hover:text-fg">
-=======
-                      <Link href={crumb.href} className="text-fg-2 no-underline">
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
                         {crumb.label}
                       </Link>
                     )}
@@ -290,7 +216,6 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
             </ol>
           </nav>
           <div className="ml-auto flex items-center gap-2">
-<<<<<<< HEAD
             {notificationsHref ? (
               <Link
                 href={notificationsHref}
@@ -336,26 +261,6 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
           </div>
         </header>
         <main className="mx-auto flex w-full max-w-[1380px] flex-col gap-5 px-8 pt-7 pb-12 max-[800px]:px-5 max-[480px]:px-4">{children}</main>
-=======
-            <ThemeToggle />
-            {user ? (
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <span
-                  aria-hidden="true"
-                  className="grid size-8 flex-none place-items-center rounded-full bg-primary-soft text-xs font-semibold text-primary"
-                >
-                  {user.initials ?? user.name.slice(0, 1)}
-                </span>
-                <span className="max-[640px]:hidden">
-                  {user.name}
-                  {user.detail ? <small className="block text-xs font-normal text-muted">{user.detail}</small> : null}
-                </span>
-              </div>
-            ) : null}
-          </div>
-        </header>
-        <main className="flex flex-col gap-5 px-8 pt-7 pb-12 max-[800px]:px-5 max-[480px]:px-4">{children}</main>
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
       </div>
     </div>
   );
@@ -366,13 +271,8 @@ export function PageHeader({ title, description, actions }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-<<<<<<< HEAD
         <h1 className="m-0 text-[28px] leading-[1.18] font-semibold tracking-tight text-balance max-[480px]:text-2xl">{title}</h1>
         {description ? <p className="mt-1 max-w-[62ch] text-sm text-fg-2">{description}</p> : null}
-=======
-        <h1 className="m-0 text-[28px] leading-[1.2] font-semibold tracking-tight max-[480px]:text-2xl">{title}</h1>
-        {description ? <p className="mt-1 max-w-[62ch] text-fg-2">{description}</p> : null}
->>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
