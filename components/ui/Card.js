@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cx } from "./cx.js";
@@ -13,6 +14,18 @@ export function Card({ as: Tag = "div", flat = false, important = false, lime = 
           : "border-border bg-card",
         !flat && "shadow-card",
         important && !lime && "border-warning/45 bg-warning-soft/25",
+=======
+import { cx } from "./cx.js";
+
+/** Surface container. `flat` drops the shadow; `important` adds the warning accent. */
+export function Card({ as: Tag = "div", flat = false, important = false, className, children, ...rest }) {
+  return (
+    <Tag
+      className={cx(
+        "rounded-xl border border-border bg-card p-5",
+        !flat && "shadow-card",
+        important && "border-l-[3px] border-l-warning",
+>>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
         className,
       )}
       {...rest}
@@ -22,6 +35,7 @@ export function Card({ as: Tag = "div", flat = false, important = false, lime = 
   );
 }
 
+<<<<<<< HEAD
 /** KPI card matching the reference bento stat layout: kicker, optional circular lime action link, tabular metric, and trend hint. */
 export function Stat({ label, value, hint, trend, href, icon: Icon }) {
   const hintTone = trend === "up" ? "text-up" : trend === "down" ? "text-down" : "text-fg-2";
@@ -59,6 +73,16 @@ export function Stat({ label, value, hint, trend, href, icon: Icon }) {
           </div>
         ) : null}
       </div>
+=======
+/** Label / value / hint block used on dashboards. */
+export function Stat({ label, value, hint, trend }) {
+  const hintTone = trend === "up" ? "text-up" : trend === "down" ? "text-down" : "text-fg-2";
+  return (
+    <Card>
+      <div className="text-xs font-semibold tracking-wider text-muted uppercase">{label}</div>
+      <div className="mt-2 text-[32px] leading-[1.1] font-semibold tracking-tight tabular-nums">{value}</div>
+      {hint ? <div className={cx("mt-1.5 text-[13px]", hintTone)}>{hint}</div> : null}
+>>>>>>> 4a131924bdc825c2a5a2d4bec268b3a1b5cda3b5
     </Card>
   );
 }
