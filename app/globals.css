@@ -1,0 +1,234 @@
+@import "tailwindcss";
+
+/* Obsidian Carbon + Electric Chartreuse Lime design system.
+   Dark is the default; theme is selected by <html data-theme> (cookie "ncc-theme", see lib/theme.js). */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0c0b;
+  --surface: #141715;
+  --card: #161917;
+  --sunken: #0f1110;
+  --border: #232825;
+  --border-strong: #343b37;
+  --text: #f1f4f0;
+  --text-secondary: #a8b1a7;
+  --muted: #788279;
+
+  --primary: #9ef02a;
+  --primary-hover: #b3f74f;
+  --primary-soft: #1b2612;
+  --primary-text: #0a1004;
+
+  --secondary: #1e2420;
+  --secondary-text: #f1f4f0;
+
+  --success: #9ef02a;
+  --success-soft: #182511;
+  --warning: #eab308;
+  --warning-soft: #2b2410;
+  --error: #f87171;
+  --error-soft: #2b1416;
+  --info: #93c5fd;
+  --info-soft: #152131;
+  --star: #eab308;
+  --highlight: #1a2413;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px rgba(0, 0, 0, 0.36);
+
+  --sidebar: #101211;
+  --sidebar-text: #d7ded6;
+  --sidebar-muted: #7a847b;
+  --sidebar-hover: #1a1e1c;
+  --sidebar-active: #1b2612;
+  --sidebar-active-text: #9ef02a;
+
+  --topbar: #111312;
+  --focus: #9ef02a;
+  --focus-ring: rgba(158, 240, 42, 0.24);
+  --overlay: rgba(0, 0, 0, 0.72);
+
+  --brand-panel: #0d100e;
+  --brand-panel-text: #f1f4f0;
+  --brand-panel-muted: #8b958c;
+
+  --lime-card: #9ef02a;
+  --lime-card-text: #0a1004;
+  --lime-card-muted: #263b0b;
+
+  --heat-0: #1b1f1c;
+  --heat-1: #32461a;
+  --heat-2: #527c20;
+  --heat-3: #76ba27;
+  --heat-4: #9ef02a;
+
+  --up: #9ef02a;
+  --down: #f87171;
+  --solid-danger: #dc2626;
+  --solid-success: #16a34a;
+  --live: #ef4444;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f2;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --sunken: #eceee9;
+  --border: #dfe3db;
+  --border-strong: #c6cdc0;
+  --text: #111510;
+  --text-secondary: #434d41;
+  --muted: #667064;
+
+  --primary: #4c8c0a;
+  --primary-hover: #3f7607;
+  --primary-soft: #ebf7d8;
+  --primary-text: #ffffff;
+
+  --secondary: #1b2318;
+  --secondary-text: #f4f7f2;
+
+  --success: #3e7a06;
+  --success-soft: #e9f6d7;
+  --warning: #926000;
+  --warning-soft: #fef4d6;
+  --error: #b91c1c;
+  --error-soft: #feeceb;
+  --info: #1d4ed8;
+  --info-soft: #e8f0fe;
+  --star: #b47800;
+  --highlight: #eef8dc;
+
+  --shadow: 0 1px 2px rgba(17, 21, 16, 0.05), 0 10px 24px rgba(17, 21, 16, 0.05);
+
+  --sidebar: #f8f9f6;
+  --sidebar-text: #1b2219;
+  --sidebar-muted: #646e62;
+  --sidebar-hover: #ecefe8;
+  --sidebar-active: #e7f4d2;
+  --sidebar-active-text: #3a6e05;
+
+  --topbar: #ffffff;
+  --focus: #4c8c0a;
+  --focus-ring: rgba(76, 140, 10, 0.2);
+  --overlay: rgba(14, 18, 13, 0.5);
+
+  --brand-panel: #101211;
+  --brand-panel-text: #f1f4f0;
+  --brand-panel-muted: #939e92;
+
+  --lime-card: #9ef02a;
+  --lime-card-text: #0a1004;
+  --lime-card-muted: #263b0b;
+
+  --heat-0: #e7ebe3;
+  --heat-1: #d4efb0;
+  --heat-2: #a5df58;
+  --heat-3: #6eb920;
+  --heat-4: #4c8c0a;
+
+  --up: #3e7a06;
+  --down: #b91c1c;
+  --solid-danger: #dc2626;
+  --solid-success: #16a34a;
+  --live: #dc2626;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-sunken: var(--sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-secondary);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-text: var(--primary-text);
+  --color-secondary: var(--secondary);
+  --color-secondary-text: var(--secondary-text);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-star: var(--star);
+  --color-highlight: var(--highlight);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-text);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-fg: var(--sidebar-active-text);
+  --color-topbar: var(--topbar);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+  --color-brand-panel: var(--brand-panel);
+  --color-brand-panel-fg: var(--brand-panel-text);
+  --color-brand-panel-muted: var(--brand-panel-muted);
+  --color-lime-card: var(--lime-card);
+  --color-lime-card-fg: var(--lime-card-text);
+  --color-lime-card-muted: var(--lime-card-muted);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-solid-danger: var(--solid-danger);
+  --color-solid-success: var(--solid-success);
+  --color-live: var(--live);
+  --shadow-card: var(--shadow);
+  --ring-focus: var(--focus-ring);
+}
+
+@layer base {
+  *, ::before, ::after {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  button, input, select, textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+}
+
+.ncc-ambient-glow {
+  background-image:
+    radial-gradient(ellipse 52% 38% at 90% 0%, rgba(158, 240, 42, 0.065), transparent 70%),
+    radial-gradient(ellipse 40% 34% at 8% 100%, rgba(158, 240, 42, 0.045), transparent 70%);
+}
+
+:root[data-theme="light"] .ncc-ambient-glow {
+  background-image:
+    radial-gradient(ellipse 52% 38% at 90% 0%, rgba(158, 240, 42, 0.11), transparent 70%),
+    radial-gradient(ellipse 40% 34% at 8% 100%, rgba(76, 140, 10, 0.05), transparent 70%);
+}
+
+@keyframes ncc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
