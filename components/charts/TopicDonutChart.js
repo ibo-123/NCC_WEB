@@ -47,7 +47,7 @@ export function TopicDonutChart({ segments = [], centerValue, centerLabel }) {
               fill="none"
               stroke={arc.color}
               strokeWidth={stroke}
-              strokeLinecap="round"
+              strokeLinecap="butt"
               strokeDasharray={arc.dashArray}
               strokeDashoffset={arc.dashOffset}
             />
@@ -65,7 +65,7 @@ export function TopicDonutChart({ segments = [], centerValue, centerLabel }) {
             <span className="flex items-center gap-2 text-fg-2">
               <span
                 aria-hidden="true"
-                className="block size-2 rounded-full"
+                className="block size-2 rounded-[1px]"
                 style={{ background: seg.color }}
               />
               <span>{seg.label}</span>

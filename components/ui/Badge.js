@@ -16,12 +16,12 @@ export function Badge({ tone = "neutral", dot = false, className, children }) {
   return (
     <span
       className={cx(
-        "inline-flex min-h-6 items-center gap-1.5 rounded-md px-2 font-mono text-[11px] font-bold tracking-wide uppercase whitespace-nowrap",
+        "inline-flex min-h-6 items-center gap-1.5 rounded-[2px] px-2 font-mono text-[11px] font-bold tracking-wide uppercase whitespace-nowrap",
         BADGE_TONES[tone],
         className,
       )}
     >
-      {dot ? <i aria-hidden="true" className="block size-1.5 rounded-full bg-current" /> : null}
+      {dot ? <i aria-hidden="true" className="block size-1.5 rounded-[1px] bg-current" /> : null}
       {children}
     </span>
   );

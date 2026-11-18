@@ -58,11 +58,11 @@ const ICONS = {
 function BrandMark({ className }) {
   return (
     <Image
-      className={cx("rounded-[6px] object-cover", className)}
+      className={cx("size-9 rounded-[4px] object-cover ring-1 ring-white/15", className)}
       src="/brand/ncc-logo.png"
-      alt=""
-      width={32}
-      height={32}
+      alt="NCC_DSA logo"
+      width={36}
+      height={36}
       priority
     />
   );
@@ -70,7 +70,7 @@ function BrandMark({ className }) {
 
 function BrandBlock({ brand }) {
   const mark = (
-    <span className="grid size-9 flex-none place-items-center overflow-hidden rounded-[6px]">
+    <span className="grid size-9 flex-none place-items-center overflow-hidden rounded-[4px]">
       {brand.mark && brand.mark !== "/" ? brand.mark : <BrandMark />}
     </span>
   );
@@ -157,7 +157,7 @@ export function AppShell({
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close navigation"
-            className="ml-auto grid size-9 cursor-pointer place-items-center rounded-xl text-sidebar-fg hover:bg-sidebar-hover min-[800px]:hidden"
+            className="ml-auto grid size-9 cursor-pointer place-items-center rounded-[3px] text-sidebar-fg hover:bg-sidebar-hover min-[800px]:hidden"
           >
             <X aria-hidden="true" size={18} />
           </button>
@@ -181,9 +181,9 @@ export function AppShell({
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-                      "flex min-h-10 items-center gap-2.5 rounded-xl border px-2.5 py-2 text-sm font-medium whitespace-nowrap no-underline transition-colors duration-150",
+                      "flex min-h-10 items-center gap-2.5 rounded-[3px] border px-2.5 py-2 text-sm font-medium whitespace-nowrap no-underline transition-colors duration-150",
                       active
-                        ? "border-primary/30 bg-sidebar-active text-sidebar-active-fg"
+                        ? "border-primary/35 bg-sidebar-active text-sidebar-active-fg"
                         : "border-transparent text-sidebar-fg hover:bg-sidebar-hover",
                     )}
                   >
@@ -216,7 +216,7 @@ export function AppShell({
             aria-label="Open navigation"
             aria-expanded={open}
             aria-controls="app-nav"
-            className="grid size-10 cursor-pointer place-items-center rounded-xl border border-border bg-surface text-fg min-[800px]:hidden"
+            className="grid size-10 cursor-pointer place-items-center rounded-[3px] border border-border bg-surface text-fg min-[800px]:hidden"
           >
             <Menu aria-hidden="true" size={18} />
           </button>
@@ -246,7 +246,7 @@ export function AppShell({
               <Link
                 href={notificationsHref}
                 aria-label="Notifications"
-                className="grid size-10 place-items-center rounded-xl border border-border bg-surface text-fg-2 no-underline transition-colors hover:bg-sunken hover:text-fg"
+                className="grid size-10 place-items-center rounded-[3px] border border-border bg-surface text-fg-2 no-underline transition-colors hover:bg-sunken hover:text-fg"
               >
                 <Bell aria-hidden="true" size={17} />
               </Link>
@@ -256,11 +256,11 @@ export function AppShell({
               profileHref ? (
                 <Link
                   href={profileHref}
-                  className="flex items-center gap-2.5 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-sm font-medium text-fg no-underline transition-colors hover:bg-sunken"
+                  className="flex items-center gap-2.5 rounded-[3px] border border-border bg-surface px-2.5 py-1.5 text-sm font-medium text-fg no-underline transition-colors hover:bg-sunken"
                 >
                   <span
                     aria-hidden="true"
-                    className="grid size-7 flex-none place-items-center rounded-lg bg-primary-soft font-mono text-xs font-semibold text-primary"
+                    className="grid size-7 flex-none place-items-center rounded-[2px] bg-primary-soft font-mono text-xs font-semibold text-primary"
                   >
                     {user.initials ?? user.name.slice(0, 1)}
                   </span>
@@ -270,10 +270,10 @@ export function AppShell({
                   </span>
                 </Link>
               ) : (
-                <div className="flex items-center gap-2.5 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-sm font-medium">
+                <div className="flex items-center gap-2.5 rounded-[3px] border border-border bg-surface px-2.5 py-1.5 text-sm font-medium">
                   <span
                     aria-hidden="true"
-                    className="grid size-7 flex-none place-items-center rounded-lg bg-primary-soft font-mono text-xs font-semibold text-primary"
+                    className="grid size-7 flex-none place-items-center rounded-[2px] bg-primary-soft font-mono text-xs font-semibold text-primary"
                   >
                     {user.initials ?? user.name.slice(0, 1)}
                   </span>

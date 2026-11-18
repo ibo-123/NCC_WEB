@@ -3,8 +3,8 @@
 import { useId, useState } from "react";
 
 /**
- * Vertical hatched bar chart inspired by the design reference:
- * diagonal hatched dark bars with electric-lime top cap lines, and solid lime highlight for the active bar.
+ * Vertical hatched bar chart aligned with the NCC_DSA contest-board reference:
+ * diagonal hatched bars with primary top cap lines and solid primary highlight for the active bar.
  * items: [{ label, value, detail? }]
  */
 export function WeeklyBarChart({ items = [], unit = "", maxValue }) {
@@ -34,7 +34,7 @@ export function WeeklyBarChart({ items = [], unit = "", maxValue }) {
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span>Click or hover any bar to inspect</span>
         {active ? (
-          <span className="rounded-md bg-primary-soft px-2 py-0.5 font-mono font-semibold text-primary tabular-nums">
+          <span className="rounded-[2px] border border-primary/25 bg-primary-soft px-2 py-0.5 font-mono font-semibold text-primary tabular-nums">
             {active.label}: {active.value}
             {unit}
             {active.detail ? ` · ${active.detail}` : ""}
@@ -87,18 +87,18 @@ export function WeeklyBarChart({ items = [], unit = "", maxValue }) {
                 y={y}
                 width={barW}
                 height={bh}
-                rx="6"
+                rx="2"
                 fill={isSelected ? "var(--primary)" : `url(#${patternId})`}
                 stroke={isSelected ? "var(--primary)" : "var(--border-strong)"}
                 strokeWidth="1"
               />
               {!isSelected ? (
                 <rect
-                  x={x + 4}
+                  x={x + 3}
                   y={y + 3}
-                  width={Math.max(4, barW - 8)}
-                  height="3"
-                  rx="1.5"
+                  width={Math.max(4, barW - 6)}
+                  height="2.5"
+                  rx="1"
                   fill="var(--primary)"
                 />
               ) : (
@@ -108,7 +108,7 @@ export function WeeklyBarChart({ items = [], unit = "", maxValue }) {
                     y={Math.max(2, y - 22)}
                     width="44"
                     height="17"
-                    rx="8.5"
+                    rx="2"
                     fill="var(--primary)"
                   />
                   <text

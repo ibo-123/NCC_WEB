@@ -1,10 +1,10 @@
 import { cx } from "./cx.js";
 
 const TONES = {
-  info: "border-info/35 bg-info-soft text-fg",
-  warn: "border-warning/35 bg-warning-soft text-fg",
-  danger: "border-error/35 bg-error-soft text-fg",
-  ok: "border-success/35 bg-success-soft text-fg",
+  info: "border-info/35 border-l-info bg-info-soft text-fg",
+  warn: "border-warning/35 border-l-warning bg-warning-soft text-fg",
+  danger: "border-error/35 border-l-error bg-error-soft text-fg",
+  ok: "border-success/35 border-l-success bg-success-soft text-fg",
 };
 
 export function Callout({ tone = "info", title, role, className, children }) {
@@ -12,7 +12,7 @@ export function Callout({ tone = "info", title, role, className, children }) {
     <div
       role={role}
       className={cx(
-        "rounded-xl border px-4 py-3 text-sm",
+        "rounded-[2px] border border-l-[3px] px-4 py-3 text-sm",
         TONES[tone] ?? TONES.info,
         className,
       )}

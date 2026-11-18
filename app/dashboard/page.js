@@ -14,7 +14,7 @@ import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap.js";
 import { usePlatform } from "@/components/providers/PlatformProvider.js";
 import { formatDateTime, formatShortDate, statusToTone } from "@/lib/status.js";
 
-const TOPIC_COLORS = ["#9ef02a", "#6fb81b", "#4c8c0a", "#325c0b", "#64748b"];
+const TOPIC_COLORS = ["#4eb8ef", "#303664", "#e87ab8", "#34d399", "#7aa0e8"];
 
 export default function StudentDashboardPage() {
   const { store, hydrated, currentUser, currentTeam } = usePlatform();
@@ -139,7 +139,7 @@ export default function StudentDashboardPage() {
                 {store.recentActivity.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-sunken px-3.5 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-[3px] border border-border bg-sunken px-3.5 py-2.5"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-xs font-medium text-muted">{item.title}</div>
@@ -190,7 +190,7 @@ export default function StudentDashboardPage() {
                 centerLabel="Solved"
               />
 
-              <div className="rounded-xl border border-border bg-sunken px-3.5 py-2.5 text-xs text-fg-2">
+              <div className="rounded-[3px] border border-border bg-sunken px-3.5 py-2.5 text-xs text-fg-2">
                 {currentTeam ? (
                   <span>
                     Team <strong className="text-fg">{currentTeam.name}</strong> ·{" "}
@@ -203,21 +203,21 @@ export default function StudentDashboardPage() {
             </Card>
           </section>
 
-          {/* Bottom Spotlight Row: Electric Lime Insight Card + Heatmap */}
+          {/* Bottom Spotlight Row: Brand Gradient Insight Card + Heatmap */}
           <section className="grid gap-4 lg:grid-cols-[0.95fr_1.55fr]">
             <Card lime className="flex flex-col justify-between gap-5">
               <div className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/90 px-3 py-1 text-xs font-semibold text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-[2px] border border-white/25 bg-black/25 px-2.5 py-1 font-mono text-[11px] font-bold tracking-wide text-white uppercase">
                   <Lightbulb aria-hidden="true" size={13} />
                   Cohort Insight
                 </span>
-                <span className="font-mono text-xs font-semibold opacity-80">
+                <span className="font-mono text-xs font-semibold text-white/85 tabular-nums">
                   {solvedCount}/{publishedProblems.length} solved
                 </span>
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="m-0 text-xl leading-snug font-semibold tracking-tight">
+                <p className="m-0 text-xl leading-snug font-semibold tracking-tight text-white">
                   {openSession
                     ? `Live attendance is open for ${openSession.lectureTitle} — submit your 4-digit code.`
                     : `Solved ${solvedCount} of ${publishedProblems.length} curated problems across ${store.topics.length} DSA topics.`}
@@ -229,7 +229,7 @@ export default function StudentDashboardPage() {
                     return (
                       <span
                         key={i}
-                        className={`h-2.5 flex-1 rounded-sm ${i < filledCount ? "bg-black/90" : "bg-black/20"}`}
+                        className={`h-2 flex-1 rounded-[1px] ${i < filledCount ? "bg-white" : "bg-white/25"}`}
                       />
                     );
                   })}
@@ -239,13 +239,13 @@ export default function StudentDashboardPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <Link
                   href={openSession ? `/lectures/${openSession.lectureId}` : "/progress"}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-black/90 px-3.5 py-2 text-xs font-semibold text-white no-underline hover:bg-black"
+                  className="inline-flex items-center gap-1.5 rounded-[3px] bg-white px-3.5 py-2 font-mono text-xs font-semibold text-[#083b5b] no-underline transition-colors hover:bg-white/90"
                 >
                   {openSession ? "Enter attendance code" : "Open practice topics"}
                   <ArrowRight aria-hidden="true" size={13} />
                 </Link>
                 {currentTeam ? (
-                  <Link href="/teams" className="inline-flex items-center gap-1 text-xs font-semibold text-black/80 hover:text-black">
+                  <Link href="/teams" className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-white/90 no-underline hover:text-white">
                     <Users aria-hidden="true" size={13} />
                     {currentTeam.name}
                   </Link>
@@ -333,8 +333,8 @@ export default function StudentDashboardPage() {
                   <Link
                     key={ann.id}
                     href={`/announcements/${ann.id}`}
-                    className={`block rounded-xl border p-3 text-inherit no-underline transition-colors hover:bg-sunken ${
-                      ann.type === "important" ? "border-warning/45 bg-warning-soft/20" : "border-border bg-surface"
+                    className={`block rounded-[3px] border p-3 text-inherit no-underline transition-colors hover:bg-sunken ${
+                      ann.type === "important" ? "border-warning/45 border-l-[3px] border-l-warning bg-warning-soft/20" : "border-border bg-surface"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">

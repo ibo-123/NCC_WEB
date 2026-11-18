@@ -81,7 +81,7 @@ export function OtpInput({ length = 4, value = "", onChange, label = "Code", dis
           onKeyDown={(e) => handleKeyDown(i, e)}
           onPaste={handlePaste}
           className={cx(
-            "h-14 w-12 rounded-[10px] border bg-surface text-center font-mono text-[22px] text-fg tabular-nums",
+            "h-14 w-12 rounded-[3px] border bg-surface text-center font-mono text-[22px] text-fg tabular-nums",
             "max-[420px]:h-[52px] max-[420px]:w-11",
             "focus:border-primary focus:shadow-[0_0_0_3px_var(--focus-ring)] focus:outline-none",
             "disabled:bg-sunken disabled:text-muted",

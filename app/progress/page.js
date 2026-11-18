@@ -10,7 +10,7 @@ import { ButtonLink } from "@/components/ui/Button.js";
 import { TopicDonutChart } from "@/components/charts/TopicDonutChart.js";
 import { usePlatform } from "@/components/providers/PlatformProvider.js";
 
-const TOPIC_COLORS = ["#9ef02a", "#6fb81b", "#4c8c0a", "#325c0b", "#64748b"];
+const TOPIC_COLORS = ["#4eb8ef", "#303664", "#e87ab8", "#34d399", "#7aa0e8"];
 
 export default function StudentProgressPage() {
   const { store, currentUser } = usePlatform();

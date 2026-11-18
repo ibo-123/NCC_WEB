@@ -103,7 +103,6 @@ export function PlatformShell({ mode = "student", breadcrumbs = [], children }) 
   const brand = {
     name: "NCC_DSA",
     sub: isAdminMode ? "Admin Console" : "Student Portal",
-    mark: "N",
     href: isAdminMode ? "/admin" : "/dashboard",
   };
 
@@ -127,7 +126,7 @@ export function PlatformShell({ mode = "student", breadcrumbs = [], children }) 
       {isAdminMode ? (
         <Link
           href="/admin/security/2fa"
-          className="flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-sidebar-fg no-underline hover:bg-sidebar-hover"
+          className="flex min-h-9 items-center gap-2.5 rounded-[3px] px-2.5 py-1.5 text-sm font-medium text-sidebar-fg no-underline hover:bg-sidebar-hover"
         >
           <ShieldCheck aria-hidden="true" size={17} />
           Two-factor auth
@@ -145,7 +144,7 @@ export function PlatformShell({ mode = "student", breadcrumbs = [], children }) 
             router.push("/admin");
           }
         }}
-        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-fg hover:bg-sidebar-hover"
+        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-[3px] border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-fg hover:bg-sidebar-hover"
       >
         <ArrowLeftRight aria-hidden="true" size={17} />
         {isAdminMode ? "Switch to Student" : "Switch to Admin"}
@@ -154,7 +153,7 @@ export function PlatformShell({ mode = "student", breadcrumbs = [], children }) 
       <button
         type="button"
         onClick={resetDemoData}
-        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-fg"
+        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-[3px] border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-fg"
       >
         <RotateCcw aria-hidden="true" size={17} />
         Reset sample data
@@ -166,7 +165,7 @@ export function PlatformShell({ mode = "student", breadcrumbs = [], children }) 
           logout();
           router.push("/login");
         }}
-        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-fg hover:bg-sidebar-hover"
+        className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-[3px] border-0 bg-transparent px-2.5 py-1.5 text-left text-sm font-medium text-sidebar-fg hover:bg-sidebar-hover"
       >
         <LogOut aria-hidden="true" size={17} />
         Log out

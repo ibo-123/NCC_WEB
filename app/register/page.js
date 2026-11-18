@@ -68,7 +68,7 @@ export default function RegisterPage() {
       <Card className="p-6">
         {createdUser ? (
           <div className="flex flex-col items-start gap-3">
-            <div className="grid size-10 place-items-center rounded-full bg-success-soft text-up">
+            <div className="grid size-10 place-items-center rounded-[3px] border border-success/30 bg-success-soft text-up">
               <CheckCircle2 aria-hidden="true" size={22} />
             </div>
             <h2 className="m-0 text-xl font-semibold tracking-tight">Account created</h2>

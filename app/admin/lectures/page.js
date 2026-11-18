@@ -208,7 +208,7 @@ export default function AdminLecturesPage() {
             placeholder="https://meet.ncc.edu/..."
           />
 
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-sunken p-3">
+          <div className="flex flex-col gap-2 rounded-[3px] border border-border bg-sunken p-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold tracking-wider text-muted uppercase">Resources</span>
               <Button size="sm" variant="outline" onClick={addResource}>
@@ -224,13 +224,13 @@ export default function AdminLecturesPage() {
                   placeholder="Title"
                   value={res.title}
                   onChange={(e) => updateResource(idx, "title", e.target.value)}
-                  className="h-9 rounded-lg border border-border-strong bg-surface px-2.5 text-sm text-fg"
+                  className="h-9 rounded-[2px] border border-border-strong bg-surface px-2.5 font-mono text-[13px] text-fg"
                 />
                 <select
                   aria-label="Resource type"
                   value={res.type}
                   onChange={(e) => updateResource(idx, "type", e.target.value)}
-                  className="h-9 rounded-lg border border-border-strong bg-surface px-2 text-sm text-fg"
+                  className="h-9 rounded-[2px] border border-border-strong bg-surface px-2 font-mono text-[13px] text-fg"
                 >
                   <option value="pdf">PDF</option>
                   <option value="link">Link</option>
@@ -242,13 +242,13 @@ export default function AdminLecturesPage() {
                   placeholder="https://..."
                   value={res.url}
                   onChange={(e) => updateResource(idx, "url", e.target.value)}
-                  className="h-9 rounded-lg border border-border-strong bg-surface px-2.5 text-sm text-fg"
+                  className="h-9 rounded-[2px] border border-border-strong bg-surface px-2.5 font-mono text-[13px] text-fg"
                 />
                 <button
                   type="button"
                   onClick={() => removeResource(idx)}
                   aria-label="Remove resource"
-                  className="grid size-8 cursor-pointer place-items-center rounded text-muted hover:bg-surface hover:text-fg"
+                  className="grid size-8 cursor-pointer place-items-center rounded-[2px] text-muted hover:bg-surface hover:text-fg"
                 >
                   <X aria-hidden="true" size={14} />
                 </button>

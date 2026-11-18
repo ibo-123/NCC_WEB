@@ -32,7 +32,7 @@ export function ToastViewport({ toasts, onDismiss }) {
             key={t.id}
             role="status"
             className={cx(
-              "flex items-start gap-2.5 rounded-[10px] border border-border border-l-[3px] bg-surface px-3.5 py-3 shadow-card",
+              "flex items-start gap-2.5 rounded-[3px] border border-border border-l-[3px] bg-surface px-3.5 py-3 shadow-card",
               TONE_STYLES[tone],
             )}
           >
@@ -45,7 +45,7 @@ export function ToastViewport({ toasts, onDismiss }) {
               type="button"
               onClick={() => onDismiss(t.id)}
               aria-label="Dismiss notification"
-              className="grid size-7 flex-none cursor-pointer place-items-center rounded-md text-muted hover:bg-sunken hover:text-fg"
+              className="grid size-7 flex-none cursor-pointer place-items-center rounded-[2px] text-muted hover:bg-sunken hover:text-fg"
             >
               <X aria-hidden="true" size={15} />
             </button>

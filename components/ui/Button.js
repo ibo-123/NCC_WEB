@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cx } from "./cx.js";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-xl border font-mono text-[13px] font-semibold tracking-tight whitespace-nowrap shrink-0 no-underline cursor-pointer transition-colors duration-150 " +
+  "inline-flex items-center justify-center gap-2 rounded-[3px] border font-mono text-[13px] font-semibold tracking-tight whitespace-nowrap shrink-0 no-underline cursor-pointer transition-colors duration-150 " +
   "disabled:opacity-45 disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:pointer-events-none";
 
 export const BUTTON_VARIANTS = {

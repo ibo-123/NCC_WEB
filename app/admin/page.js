@@ -33,10 +33,10 @@ export default function AdminDashboardPage() {
   }));
 
   const accountSegments = [
-    { label: "Active Students", value: activeStudents, color: "#9ef02a" },
-    { label: "Restricted", value: restrictedUsers, color: "#f87171" },
-    { label: "Admins", value: adminCount, color: "#93c5fd" },
-    { label: "Active Teams", value: activeTeams, color: "#6fb81b" },
+    { label: "Active Students", value: activeStudents, color: "#4eb8ef" },
+    { label: "Restricted", value: restrictedUsers, color: "#fb7185" },
+    { label: "Admins", value: adminCount, color: "#7aa0e8" },
+    { label: "Active Teams", value: activeTeams, color: "#34d399" },
   ];
 
   return (
@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
                   <Link
                     key={row.label}
                     href={row.href}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-sunken px-3.5 py-2.5 text-inherit no-underline transition-colors hover:border-primary/40"
+                    className="flex items-center justify-between gap-3 rounded-[3px] border border-border bg-sunken px-3.5 py-2.5 text-inherit no-underline transition-colors hover:border-primary/40"
                   >
                     <div>
                       <div className="text-xs font-medium text-muted">{row.label}</div>
@@ -155,7 +155,7 @@ export default function AdminDashboardPage() {
                 centerLabel="Active"
               />
 
-              <div className="flex items-center justify-between rounded-xl border border-border bg-sunken px-3.5 py-2.5 text-xs text-fg-2">
+              <div className="flex items-center justify-between rounded-[3px] border border-border bg-sunken px-3.5 py-2.5 text-xs text-fg-2">
                 <span className="inline-flex items-center gap-1.5">
                   <ShieldCheck aria-hidden="true" size={14} className="text-primary" />
                   Admin 2FA
@@ -170,16 +170,16 @@ export default function AdminDashboardPage() {
           <section className="grid gap-4 lg:grid-cols-[0.95fr_1.55fr]">
             <Card lime className="flex flex-col justify-between gap-5">
               <div className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/90 px-3 py-1 text-xs font-semibold text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-[2px] border border-white/25 bg-black/25 px-2.5 py-1 font-mono text-[11px] font-bold tracking-wide text-white uppercase">
                   <Lightbulb aria-hidden="true" size={13} />
                   Action Focus
                 </span>
-                <span className="font-mono text-xs font-semibold opacity-80">
+                <span className="font-mono text-xs font-semibold text-white/85 tabular-nums">
                   {restrictedUsers} restricted
                 </span>
               </div>
 
-              <p className="m-0 text-xl leading-snug font-semibold tracking-tight">
+              <p className="m-0 text-xl leading-snug font-semibold tracking-tight text-white">
                 {restrictedUsers > 0
                   ? `${restrictedUsers} student account awaiting standing review and reopen confirmation.`
                   : `${openSessions} live attendance window active across ${publishedLectures} published lectures.`}
@@ -188,12 +188,12 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between gap-2 pt-1">
                 <Link
                   href={restrictedUsers > 0 ? "/admin/restricted" : "/admin/attendance"}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-black/90 px-3.5 py-2 text-xs font-semibold text-white no-underline hover:bg-black"
+                  className="inline-flex items-center gap-1.5 rounded-[3px] bg-white px-3.5 py-2 font-mono text-xs font-semibold text-[#083b5b] no-underline transition-colors hover:bg-white/90"
                 >
                   {restrictedUsers > 0 ? "Review restricted" : "Open attendance"}
                   <ArrowRight aria-hidden="true" size={13} />
                 </Link>
-                <Link href="/admin/results" className="text-xs font-semibold text-black/80 hover:text-black">
+                <Link href="/admin/results" className="font-mono text-xs font-semibold text-white/90 no-underline hover:text-white">
                   Contest pipeline
                 </Link>
               </div>

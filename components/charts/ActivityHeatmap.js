@@ -36,7 +36,7 @@ export function ActivityHeatmap({
             <span
               key={lvl}
               aria-hidden="true"
-              className="block size-3 rounded-[3px]"
+              className="block size-3 rounded-[2px]"
               style={{ background: HEAT_VARS[lvl] }}
             />
           ))}
@@ -60,7 +60,7 @@ export function ActivityHeatmap({
                 onFocus={() => setSelected(cell)}
                 onClick={() => setSelected(cell)}
                 aria-label={`${cell.date}: ${cell.count} qualifying ${cell.count === 1 ? "event" : "events"}`}
-                className="block size-3.5 cursor-pointer rounded-[3px] border border-transparent p-0 transition-transform duration-100 hover:scale-110 focus-visible:ring-1 focus-visible:ring-focus"
+                className="block size-3.5 cursor-pointer rounded-[2px] border border-transparent p-0 transition-transform duration-100 hover:scale-110 focus-visible:ring-1 focus-visible:ring-focus"
                 style={{
                   background: HEAT_VARS[Math.max(0, Math.min(4, cell.level ?? 0))],
                   borderColor: isSelected ? "var(--text)" : "transparent",

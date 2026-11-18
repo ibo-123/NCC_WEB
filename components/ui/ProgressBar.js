@@ -9,10 +9,10 @@ export function ProgressBar({ value = 0, label = "Progress" }) {
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="h-2 w-full overflow-hidden rounded-full border border-border bg-sunken"
+      className="h-2 w-full overflow-hidden rounded-[2px] border border-border bg-sunken"
     >
       <span
-        className={cx("block h-full rounded-full bg-primary transition-[width] duration-200")}
+        className={cx("block h-full rounded-[1px] bg-primary transition-[width] duration-200")}
         style={{ width: `${clamped}%` }}
       />
     </div>

@@ -107,7 +107,7 @@ export function ContestsView({ initialMode = "individual" }) {
                             href={contest.invitationUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-border-strong px-2.5 text-[13px] font-semibold text-fg no-underline hover:bg-sunken"
+                            className="inline-flex h-8 items-center gap-1 rounded-[3px] border border-border-strong px-2.5 font-mono text-[13px] font-semibold text-fg no-underline hover:bg-sunken"
                           >
                             Codeforces
                             <ExternalLink aria-hidden="true" size={13} />

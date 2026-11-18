@@ -11,10 +11,12 @@ export function Card({ as: Tag = "div", flat = false, important = false, lime = 
   return (
     <Tag
       className={cx(
-        "rounded-2xl border p-5 transition-colors duration-150",
-        lime ? "border-transparent bg-lime-card text-lime-card-fg" : "border-border bg-card",
+        "rounded-[3px] border p-5 transition-colors duration-150",
+        lime
+          ? "border-white/15 bg-[#083b5b] [background-image:var(--brand-grad)] text-white"
+          : "border-border bg-card",
         !flat && "shadow-card",
-        important && !lime && "border-warning/45 bg-warning-soft/25",
+        important && !lime && "border-warning/45 border-t-2 border-t-warning bg-warning-soft/25",
         className,
       )}
       {...rest}
@@ -24,7 +26,7 @@ export function Card({ as: Tag = "div", flat = false, important = false, lime = 
   );
 }
 
-/** KPI card: kicker, optional circular action link, tabular metric, and trend hint. */
+/** KPI card: kicker, optional square-edged action link, tabular metric, and trend hint. */
 export function Stat({ label, value, hint, trend, href, icon: Icon }) {
   const hintTone = trend === "up" ? "text-up" : trend === "down" ? "text-down" : "text-fg-2";
   return (
@@ -38,7 +40,7 @@ export function Stat({ label, value, hint, trend, href, icon: Icon }) {
           <Link
             href={href}
             aria-label={`Open ${label}`}
-            className="grid size-7 flex-none place-items-center rounded-full bg-primary text-primary-text transition-transform duration-150 hover:scale-105"
+            className="grid size-7 flex-none place-items-center rounded-[3px] bg-primary text-primary-text transition-colors duration-150 hover:bg-primary-hover"
           >
             <ArrowUpRight aria-hidden="true" size={14} />
           </Link>
@@ -53,7 +55,7 @@ export function Stat({ label, value, hint, trend, href, icon: Icon }) {
           <div
             className={cx(
               "inline-flex items-center gap-1 text-xs font-medium",
-              trend ? "rounded-md bg-sunken px-2 py-0.5 font-mono tabular-nums" : "",
+              trend ? "rounded-[2px] border border-border bg-sunken px-2 py-0.5 font-mono tabular-nums" : "",
               hintTone,
             )}
           >

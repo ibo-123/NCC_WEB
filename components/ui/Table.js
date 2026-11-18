@@ -8,7 +8,7 @@ import { cx } from "./cx.js";
  */
 export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, empty = "Nothing to show.", caption }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+    <div className="overflow-x-auto rounded-[3px] border border-border bg-card">
       <table className="w-full border-collapse font-mono text-[13px]">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
@@ -35,23 +35,27 @@ export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, 
               </td>
             </tr>
           ) : (
-            rows.map((row) => (
-              <tr key={rowKey(row)} className="group">
-                {columns.map((c) => (
-                  <td
-                    key={c.key}
-                    className={cx(
-                      "border-b border-border px-3.5 py-3 align-middle group-last:border-b-0 group-hover:bg-sunken",
-                      highlight?.(row) && "bg-highlight",
-                      c.align === "right" && "text-right tabular-nums",
-                      c.className,
-                    )}
-                  >
-                    {c.render ? c.render(row) : row[c.key]}
-                  </td>
-                ))}
-              </tr>
-            ))
+            rows.map((row) => {
+              const isHighlighted = Boolean(highlight?.(row));
+              return (
+                <tr key={rowKey(row)} className="group">
+                  {columns.map((c, idx) => (
+                    <td
+                      key={c.key}
+                      className={cx(
+                        "border-b border-border px-3.5 py-3 align-middle group-last:border-b-0 group-hover:bg-sunken",
+                        isHighlighted && "bg-highlight",
+                        isHighlighted && idx === 0 && "shadow-[inset_3px_0_0_var(--primary)]",
+                        c.align === "right" && "text-right tabular-nums",
+                        c.className,
+                      )}
+                    >
+                      {c.render ? c.render(row) : row[c.key]}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
@@ -60,7 +64,7 @@ export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, 
 }
 
 const PAGER_ITEM =
-  "inline-flex h-9 min-w-9 items-center justify-center rounded border px-3 font-mono text-[13px] font-medium no-underline";
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-[2px] border px-3 font-mono text-[13px] font-medium no-underline";
 
 /** Which page numbers to show: first, last, and a window around the current page, with gaps as null. */
 export function pageWindow(page, totalPages, radius = 1) {

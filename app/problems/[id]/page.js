@@ -71,7 +71,7 @@ export default function ProblemDetailPage() {
                   href={problem.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-transparent bg-primary px-3 text-[13px] font-semibold text-primary-text no-underline hover:bg-primary-hover"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-transparent [background-image:var(--brand-grad)] bg-[#083b5b] px-3 font-mono text-[13px] font-semibold text-white no-underline hover:brightness-110"
                 >
                   Open on {problem.platform === "codeforces" ? "Codeforces" : "LeetCode"}
                   <ExternalLink aria-hidden="true" size={14} />

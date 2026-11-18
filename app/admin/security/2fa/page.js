@@ -112,10 +112,10 @@ export default function AdminTwoFactorPage() {
               Scan this code in your authenticator app or enter the manual key, then enter any 6-digit code to verify enrollment.
             </p>
 
-            <div className="flex flex-wrap items-center gap-5 rounded-xl border border-border bg-sunken p-4">
+            <div className="flex flex-wrap items-center gap-5 rounded-[3px] border border-border bg-sunken p-4">
               <div
                 aria-label="Authenticator QR matrix"
-                className="grid grid-cols-9 gap-[3px] rounded-lg bg-white p-3"
+                className="grid grid-cols-9 gap-[3px] rounded-[3px] bg-white p-3"
               >
                 {QR_BITS.map((bit, i) => (
                   <span

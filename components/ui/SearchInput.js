@@ -7,7 +7,7 @@ export function SearchInput({ value, onChange, placeholder = "Search...", label,
   return (
     <label
       className={cx(
-        "flex h-10 min-w-[min(260px,100%)] flex-1 items-center gap-2 rounded-xl border border-border-strong bg-surface px-3.5",
+        "flex h-10 min-w-[min(260px,100%)] flex-1 items-center gap-2 rounded-[2px] border border-border-strong bg-surface px-3.5",
         "focus-within:border-primary focus-within:shadow-[0_0_0_3px_var(--focus-ring)]",
         className,
       )}
@@ -26,7 +26,7 @@ export function SearchInput({ value, onChange, placeholder = "Search...", label,
           type="button"
           onClick={() => onChange("")}
           aria-label="Clear search"
-          className="grid size-6 flex-none cursor-pointer place-items-center rounded text-muted hover:bg-sunken hover:text-fg"
+          className="grid size-6 flex-none cursor-pointer place-items-center rounded-[2px] text-muted hover:bg-sunken hover:text-fg"
         >
           <X aria-hidden="true" size={14} />
         </button>

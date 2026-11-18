@@ -71,7 +71,7 @@ export default function AdminUsersPage() {
             aria-label="Filter by role"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-10 rounded-lg border border-border-strong bg-surface px-3 text-sm text-fg"
+            className="h-10 rounded-[2px] border border-border-strong bg-surface px-3 font-mono text-[13px] text-fg"
           >
             <option value="all">All roles</option>
             <option value="student">Students</option>

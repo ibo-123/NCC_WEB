@@ -13,7 +13,7 @@ export function ResponsiveTable({ columns, rows, rowKey = (row) => row.id, highl
       </div>
       <div className="flex flex-col gap-2.5 min-[800px]:hidden">
         {rows.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted">
+          <div className="rounded-[3px] border border-border bg-card px-4 py-10 text-center text-sm text-muted">
             {empty}
           </div>
         ) : (
@@ -23,8 +23,8 @@ export function ResponsiveTable({ columns, rows, rowKey = (row) => row.id, highl
               <article
                 key={rowKey(row)}
                 className={cx(
-                  "rounded-2xl border border-border bg-card px-4 py-3",
-                  isHighlighted && "border-primary/50 bg-highlight",
+                  "rounded-[3px] border border-border bg-card px-4 py-3",
+                  isHighlighted && "border-primary/50 border-l-[3px] border-l-primary bg-highlight",
                 )}
               >
                 {columns.map((c) => (

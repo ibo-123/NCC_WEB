@@ -135,7 +135,7 @@ export function ResultsView({ initialMode = "individual", contestIdProp = null }
                     setSelectedContestId(e.target.value);
                     setPage(1);
                   }}
-                  className="h-10 rounded-lg border border-border-strong bg-surface px-3 text-sm text-fg"
+                  className="h-10 rounded-[2px] border border-border-strong bg-surface px-3 font-mono text-[13px] text-fg"
                 >
                   {publishedContestsForMode.map((c) => (
                     <option key={c.id} value={c.id}>

@@ -33,7 +33,7 @@ export function Modal({ open, onClose, title, description, footer, maxWidth = "m
         aria-modal="true"
         aria-labelledby="ncc-modal-title"
         className={cx(
-          "w-full rounded-2xl border border-border bg-surface p-6 shadow-card",
+          "w-full rounded-[3px] border border-border border-t-2 border-t-primary bg-surface p-6 shadow-card",
           "max-[799px]:max-h-[92vh] max-[799px]:overflow-auto max-[799px]:rounded-b-none",
           maxWidth,
         )}
@@ -50,7 +50,7 @@ export function Modal({ open, onClose, title, description, footer, maxWidth = "m
               type="button"
               onClick={onClose}
               aria-label="Close modal"
-              className="grid size-9 flex-none cursor-pointer place-items-center rounded-lg text-muted hover:bg-sunken hover:text-fg"
+              className="grid size-9 flex-none cursor-pointer place-items-center rounded-[2px] text-muted hover:bg-sunken hover:text-fg"
             >
               <X aria-hidden="true" size={18} />
             </button>
