@@ -2,23 +2,23 @@ import Link from "next/link";
 import { cx } from "./cx.js";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded border font-mono text-[13px] font-semibold tracking-tight whitespace-nowrap no-underline cursor-pointer " +
+  "inline-flex items-center justify-center gap-2 rounded-xl border font-mono text-[13px] font-semibold tracking-tight whitespace-nowrap shrink-0 no-underline cursor-pointer transition-colors duration-150 " +
   "disabled:opacity-45 disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:pointer-events-none";
 
 export const BUTTON_VARIANTS = {
   primary:
     "border-transparent text-white [background-image:var(--brand-grad)] bg-[#083b5b] hover:brightness-110",
-  secondary: "border-transparent bg-secondary text-secondary-text",
+  secondary: "border-border bg-secondary text-secondary-text hover:bg-sunken",
   outline: "border-border-strong bg-transparent text-fg hover:bg-sunken",
   ghost: "border-transparent bg-transparent text-fg-2 hover:bg-sunken hover:text-fg",
-  danger: "border-transparent bg-solid-danger text-white",
-  success: "border-transparent bg-solid-success text-white",
+  danger: "border-transparent bg-solid-danger text-white hover:opacity-90",
+  success: "border-transparent bg-solid-success text-white hover:opacity-90",
 };
 
 export const BUTTON_SIZES = {
-  sm: "h-8 px-2.5 text-[13px]",
-  md: "h-10 px-3.5 text-sm",
-  lg: "h-12 px-[18px] text-[15px]",
+  sm: "h-8 px-3 text-[13px]",
+  md: "h-10 px-4 text-sm",
+  lg: "h-12 px-5 text-[15px]",
 };
 
 export function buttonClass({ variant = "primary", size = "md", block = false, className } = {}) {

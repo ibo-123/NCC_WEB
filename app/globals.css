@@ -1,51 +1,157 @@
 @import "tailwindcss";
 
-/* Logo-sampled palette: navy #083b5b → indigo #303664 → magenta #5d1c4d */
+/* Logo-sampled palette: navy #083b5b → indigo #303664 → magenta #5d1c4d.
+   Dark is the default; theme is selected by <html data-theme> (cookie "ncc-theme", see lib/theme.js). */
 
 :root,
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #050b14; --surface: #0a1320; --card: #0e1828; --sunken: #070e18;
-  --border: #1a2a3e; --border-strong: #2a3e58;
-  --text: #e8eef7; --text-secondary: #a8b6cc; --muted: #6e8199;
-  --primary: #4eb8ef; --primary-hover: #7ccaf5; --primary-soft: #0a2740; --primary-text: #041824;
-  --secondary: #1a2438; --secondary-text: #f4f7fb;
-  --success: #34d399; --success-soft: #022c22;
-  --warning: #e87ab8; --warning-soft: #3a1230; --error: #fb7185; --error-soft: #4c0519;
-  --info: #7aa0e8; --info-soft: #121a32; --star: #e87ab8; --highlight: #0a2740;
-  --shadow: none;
-  --sidebar: #040910; --sidebar-text: #d2dde9; --sidebar-muted: #6e8199;
-  --sidebar-hover: #0c1828; --sidebar-active: #0c2a42; --sidebar-active-text: #7ccaf5;
-  --topbar: #071018; --focus: #4eb8ef; --focus-ring: rgba(78, 184, 239, .22);
-  --overlay: rgba(0, 0, 0, .72);
-  --up: #34d399; --down: #fb7185;
-  --solid-danger: #dc2626; --solid-success: #059669; --live: #fb7185;
-  --rank: #4eb8ef; --clock: #e87ab8; --grid: rgba(78, 184, 239, .05);
-  --hatch: rgba(232, 122, 184, .04); --ink-rule: #4eb8ef;
-  --radius: 2px; --radius-lg: 3px;
+  --bg: #050b14;
+  --surface: #0a1320;
+  --card: #0e1828;
+  --sunken: #070e18;
+  --border: #1a2a3e;
+  --border-strong: #2a3e58;
+  --text: #e8eef7;
+  --text-secondary: #a8b6cc;
+  --muted: #6e8199;
+
+  --primary: #4eb8ef;
+  --primary-hover: #7ccaf5;
+  --primary-soft: #0a2740;
+  --primary-text: #041824;
+
+  --secondary: #1a2438;
+  --secondary-text: #f4f7fb;
+
+  --success: #34d399;
+  --success-soft: #022c22;
+  --warning: #e87ab8;
+  --warning-soft: #3a1230;
+  --error: #fb7185;
+  --error-soft: #4c0519;
+  --info: #7aa0e8;
+  --info-soft: #121a32;
+  --star: #e87ab8;
+  --highlight: #0a2740;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px rgba(5, 11, 20, 0.4);
+
+  --sidebar: #040910;
+  --sidebar-text: #d2dde9;
+  --sidebar-muted: #6e8199;
+  --sidebar-hover: #0c1828;
+  --sidebar-active: #0c2a42;
+  --sidebar-active-text: #7ccaf5;
+
+  --topbar: #071018;
+  --focus: #4eb8ef;
+  --focus-ring: rgba(78, 184, 239, 0.22);
+  --overlay: rgba(0, 0, 0, 0.72);
+
+  --brand-panel: #083b5b;
+  --brand-panel-text: #e8eef7;
+  --brand-panel-muted: #9bb0c4;
+
+  /* Spotlight cards (legacy `lime` prop) — sky lift of logo navy */
+  --lime-card: #4eb8ef;
+  --lime-card-text: #041824;
+  --lime-card-muted: #0a2740;
+
+  --heat-0: #0c1828;
+  --heat-1: #0c2a42;
+  --heat-2: #155a82;
+  --heat-3: #4eb8ef;
+  --heat-4: #e87ab8;
+
+  --up: #34d399;
+  --down: #fb7185;
+  --solid-danger: #dc2626;
+  --solid-success: #059669;
+  --live: #fb7185;
+
+  --rank: #4eb8ef;
+  --clock: #e87ab8;
+  --grid: rgba(78, 184, 239, 0.05);
+  --hatch: rgba(232, 122, 184, 0.04);
+  --ink-rule: #4eb8ef;
+  --radius: 2px;
+  --radius-lg: 3px;
   --brand-grad: linear-gradient(145deg, #083b5b 0%, #303664 50%, #5d1c4d 100%);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #eef2f7; --surface: #f6f8fc; --card: #ffffff; --sunken: #e3e8f1;
-  --border: #c5cedc; --border-strong: #97a4b8;
-  --text: #0a1624; --text-secondary: #2c3a4f; --muted: #5a6b82;
-  --primary: #083b5b; --primary-hover: #062f49; --primary-soft: #d7eaf5; --primary-text: #f4faff;
-  --secondary: #1a1630; --secondary-text: #f4f7fb;
-  --success: #047857; --success-soft: #d1fae5;
-  --warning: #5d1c4d; --warning-soft: #f8e7f1; --error: #b91c1c; --error-soft: #fee2e2;
-  --info: #303664; --info-soft: #e4e7f4; --star: #5d1c4d; --highlight: #e4f3fb;
-  --shadow: 0 1px 0 rgba(8, 59, 91, .06);
-  --sidebar: #061526; --sidebar-text: #e2e8f0; --sidebar-muted: #8b9cb3;
-  --sidebar-hover: #0c2238; --sidebar-active: #0c3550; --sidebar-active-text: #8fd0f5;
-  --topbar: #ffffff; --focus: #083b5b; --focus-ring: rgba(8, 59, 91, .22);
-  --overlay: rgba(6, 21, 38, .52);
-  --up: #047857; --down: #b91c1c;
-  --solid-danger: #dc2626; --solid-success: #047857; --live: #b91c1c;
-  --rank: #083b5b; --clock: #5d1c4d; --grid: rgba(8, 59, 91, .07);
-  --hatch: rgba(93, 28, 77, .05); --ink-rule: #083b5b;
-  --radius: 2px; --radius-lg: 3px;
+  --bg: #eef2f7;
+  --surface: #f6f8fc;
+  --card: #ffffff;
+  --sunken: #e3e8f1;
+  --border: #c5cedc;
+  --border-strong: #97a4b8;
+  --text: #0a1624;
+  --text-secondary: #2c3a4f;
+  --muted: #5a6b82;
+
+  --primary: #083b5b;
+  --primary-hover: #062f49;
+  --primary-soft: #d7eaf5;
+  --primary-text: #f4faff;
+
+  --secondary: #1a1630;
+  --secondary-text: #f4f7fb;
+
+  --success: #047857;
+  --success-soft: #d1fae5;
+  --warning: #5d1c4d;
+  --warning-soft: #f8e7f1;
+  --error: #b91c1c;
+  --error-soft: #fee2e2;
+  --info: #303664;
+  --info-soft: #e4e7f4;
+  --star: #5d1c4d;
+  --highlight: #e4f3fb;
+
+  --shadow: 0 1px 2px rgba(8, 59, 91, 0.05), 0 10px 24px rgba(8, 59, 91, 0.05);
+
+  --sidebar: #061526;
+  --sidebar-text: #e2e8f0;
+  --sidebar-muted: #8b9cb3;
+  --sidebar-hover: #0c2238;
+  --sidebar-active: #0c3550;
+  --sidebar-active-text: #8fd0f5;
+
+  --topbar: #ffffff;
+  --focus: #083b5b;
+  --focus-ring: rgba(8, 59, 91, 0.22);
+  --overlay: rgba(6, 21, 38, 0.52);
+
+  --brand-panel: #083b5b;
+  --brand-panel-text: #f4f7fb;
+  --brand-panel-muted: #9bb6c8;
+
+  --lime-card: #083b5b;
+  --lime-card-text: #f4faff;
+  --lime-card-muted: #9bb6c8;
+
+  --heat-0: #e2e8f0;
+  --heat-1: #b7d9ec;
+  --heat-2: #4eb8ef;
+  --heat-3: #083b5b;
+  --heat-4: #5d1c4d;
+
+  --up: #047857;
+  --down: #b91c1c;
+  --solid-danger: #dc2626;
+  --solid-success: #047857;
+  --live: #b91c1c;
+
+  --rank: #083b5b;
+  --clock: #5d1c4d;
+  --grid: rgba(8, 59, 91, 0.07);
+  --hatch: rgba(93, 28, 77, 0.05);
+  --ink-rule: #083b5b;
+  --radius: 2px;
+  --radius-lg: 3px;
   --brand-grad: linear-gradient(145deg, #083b5b 0%, #303664 50%, #5d1c4d 100%);
 }
 
@@ -89,6 +195,12 @@
   --color-topbar: var(--topbar);
   --color-focus: var(--focus);
   --color-overlay: var(--overlay);
+  --color-brand-panel: var(--brand-panel);
+  --color-brand-panel-fg: var(--brand-panel-text);
+  --color-brand-panel-muted: var(--brand-panel-muted);
+  --color-lime-card: var(--lime-card);
+  --color-lime-card-fg: var(--lime-card-text);
+  --color-lime-card-muted: var(--lime-card-muted);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-solid-danger: var(--solid-danger);
@@ -99,7 +211,9 @@
 }
 
 @layer base {
-  *, ::before, ::after { border-color: var(--border); }
+  *, ::before, ::after {
+    border-color: var(--border);
+  }
   body {
     background-color: var(--bg);
     background-image:
@@ -112,11 +226,40 @@
     line-height: 1.55;
     letter-spacing: -0.005em;
   }
-  ::selection { background: color-mix(in srgb, var(--primary) 40%, transparent); color: var(--text); }
-  :focus { outline: none; }
-  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  button, input, select, textarea { font-family: inherit; color: inherit; }
-  code, kbd, .font-mono { font-family: var(--font-mono); }
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 40%, transparent);
+    color: var(--text);
+  }
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  button, input, select, textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+  code, kbd, .font-mono {
+    font-family: var(--font-mono);
+  }
 }
 
-@keyframes ncc-spin { to { transform: rotate(360deg); } }
+.ncc-ambient-glow {
+  background-image:
+    radial-gradient(ellipse 52% 38% at 90% 0%, rgba(78, 184, 239, 0.08), transparent 70%),
+    radial-gradient(ellipse 40% 34% at 8% 100%, rgba(232, 122, 184, 0.06), transparent 70%);
+}
+
+:root[data-theme="light"] .ncc-ambient-glow {
+  background-image:
+    radial-gradient(ellipse 52% 38% at 90% 0%, rgba(8, 59, 91, 0.08), transparent 70%),
+    radial-gradient(ellipse 40% 34% at 8% 100%, rgba(93, 28, 77, 0.05), transparent 70%);
+}
+
+@keyframes ncc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

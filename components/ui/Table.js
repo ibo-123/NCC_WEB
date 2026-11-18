@@ -8,7 +8,7 @@ import { cx } from "./cx.js";
  */
 export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, empty = "Nothing to show.", caption }) {
   return (
-    <div className="overflow-x-auto border-y border-border bg-transparent">
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card">
       <table className="w-full border-collapse font-mono text-[13px]">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
@@ -18,7 +18,7 @@ export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, 
                 key={c.key}
                 scope="col"
                 className={cx(
-                  "border-b border-border bg-sunken px-3.5 py-3 text-[11px] font-bold tracking-[0.08em] text-muted uppercase",
+                  "border-b border-border bg-sunken px-4 py-3 text-[11px] font-bold tracking-[0.08em] text-muted uppercase",
                   c.align === "right" ? "text-right" : "text-left",
                 )}
               >

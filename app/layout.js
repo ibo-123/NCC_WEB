@@ -1,6 +1,7 @@
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import { DEFAULT_THEME, normalizeTheme, THEME_COOKIE } from "@/lib/theme.js";
+import { PlatformProvider } from "@/components/providers/PlatformProvider.js";
 import "./globals.css";
 
 const sans = Space_Grotesk({
@@ -18,8 +19,12 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "NCC_DSA",
-  description: "Contest board for NCC DSA — train, contest, climb.",
+  title: "NCC_DSA Platform",
+  description: "Individual practice and Group competition on one platform.",
+  openGraph: {
+    title: "NCC_DSA Platform",
+    description: "Individual practice and Group competition on one platform.",
+  },
 };
 
 export default async function RootLayout({ children }) {
@@ -28,7 +33,9 @@ export default async function RootLayout({ children }) {
   const theme = normalizeTheme(store.get(THEME_COOKIE)?.value ?? DEFAULT_THEME);
   return (
     <html lang="en" data-theme={theme} className={`${sans.variable} ${mono.variable}`}>
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans">
+        <PlatformProvider>{children}</PlatformProvider>
+      </body>
     </html>
   );
 }
