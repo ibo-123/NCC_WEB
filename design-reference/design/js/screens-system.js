@@ -4,16 +4,21 @@ addScreen({
   render() {
     const tiles = screenGroups().filter((g) => g.name !== "01 Cover").map((g) => `<a data-nav="${g.items[0].id}" href="#${g.items[0].id}"><small>${g.name.split(" ").slice(0, 1)}</small><strong>${g.name.replace(/^\d+\s/, "")}</strong></a>`).join("");
     return `<div class="spec-board">
-      <div class="side-head" style="padding:0"><span class="mark">N</span><span><span class="brand-name">NCC_DSA</span><span class="brand-sub">Platform</span></span></div>
-      <div>
-        <p class="kicker">Visual specification</p>
-        <h1>Individual practice and Group competition on one platform.</h1>
-        <p class="secondary" style="margin-top:8px;max-width:62ch">Students keep one account. Contests and streaks split into Individual and Team tracks. Sample student: Ibrahim Kedir · team Binary Hawks.</p>
+      <div class="side-head" style="padding:0">${brandMark()}<span><span class="brand-name">NCC_DSA</span><span class="brand-sub">night code club</span></span></div>
+      <div class="cover-hero">
+        <div>
+          <p class="kicker">NCC DSA · visual specification</p>
+          <h1>A contest board for serious practice.</h1>
+          <p class="secondary" style="margin-top:12px;max-width:46ch">Individual and Group tracks on one account — lectures, attendance, Codeforces rounds, rating, and dual streaks.</p>
+          <div class="cluster" style="margin-top:18px"><span class="clock-chip">LIVE · 01:42:08</span><span class="rank-chip tier-5"><i></i>rating 4.27</span></div>
+        </div>
+        <div class="cover-logo" aria-hidden="true"><img src="assets/ncc-logo.png" alt="" width="220" height="220" /></div>
       </div>
+      ${scoreboardStrip([["Tracks", "Individual + Group"],["Sample", "Ibrahim · Binary Hawks"],["Streaks", "12 AC · 8 team"],["Status", "Ready for build"]])}
       <div class="grid-3">
-        <article class="card"><h3>Individual</h3><p class="secondary" style="margin-top:6px">Personal contests, progress, rating, and individual streak.</p></article>
-        <article class="card"><h3>Group</h3><p class="secondary" style="margin-top:6px">Create a team, run week-long Codeforces team contests, track team streak.</p></article>
-        <article class="card"><h3>Shared learning</h3><p class="secondary" style="margin-top:6px">Lectures, attendance, and problem sheets stay shared across both modes.</p></article>
+        <article class="card"><h3>Individual</h3><p class="secondary" style="margin-top:6px">Personal contests, progress, rating, AC streak.</p></article>
+        <article class="card"><h3>Group</h3><p class="secondary" style="margin-top:6px">Teams, week-long Codeforces rounds, team streak.</p></article>
+        <article class="card"><h3>Shared</h3><p class="secondary" style="margin-top:6px">Lectures, attendance, and problem sheets stay shared.</p></article>
       </div>
       <div class="page-index">${tiles}</div>
     </div>`;
@@ -24,22 +29,28 @@ addScreen({
   id: "foundations", order: 200, group: "02 Design system", title: "Foundations",
   links: [["Components", "components"]],
   render() {
-    const light = [["Primary", "#0F6E56", "Actions, links, focus"], ["Secondary", "#1B3A4B", "Secondary actions"], ["Background", "#F3F5F8", "Page background"], ["Surface", "#FFFFFF", "Bars and inputs"], ["Card", "#FFFFFF", "Cards"], ["Border", "#E1E6EE", "Dividers"], ["Text", "#12161F", "Primary text"], ["Text secondary", "#3E4A5C", "Supporting text"], ["Muted", "#5C687A", "Captions"], ["Success", "#0F7A3A", "Positive"], ["Warning", "#8A5A00", "Caution"], ["Error", "#B4232C", "Errors"], ["Information", "#1D5BBF", "Informational"]];
-    const dark = [["Primary", "#3DDC97", "Actions, links, focus"], ["Secondary", "#243447", "Secondary actions"], ["Background", "#0C1117", "Page background"], ["Surface", "#121922", "Bars and inputs"], ["Card", "#171F2A", "Cards"], ["Border", "#2A3544", "Dividers"], ["Text", "#E7EDF4", "Primary text"], ["Text secondary", "#C5D0DE", "Supporting text"], ["Muted", "#96A3B5", "Captions"], ["Success", "#3DDC97", "Positive"], ["Warning", "#F0B429", "Caution"], ["Error", "#FF8B95", "Errors"], ["Information", "#9DC2FF", "Informational"]];
+    const light = [["Logo navy", "#083B5B", "Primary / gradient start"], ["Logo indigo", "#303664", "Gradient mid"], ["Logo magenta", "#5D1C4D", "Clock / gradient end"], ["Sky lift", "#4EB8EF", "Dark-mode actions"], ["AC", "#047857", "Solved"], ["WA", "#B91C1C", "Failed"], ["Background", "#EEF2F7", "Grid paper"], ["Text", "#0A1624", "Primary text"]];
+    const dark = [["Sky / primary", "#4EB8EF", "Actions (lifted navy)"], ["Magenta / clock", "#E87AB8", "Timer, live heat"], ["Logo navy", "#083B5B", "Gradient start"], ["Logo magenta", "#5D1C4D", "Gradient end"], ["AC", "#34D399", "Solved"], ["WA", "#FB7185", "Failed"], ["Background", "#050B14", "Night board"], ["Text", "#E8EEF7", "Primary text"]];
     const sw = (rows) => rows.map(([n, h, r]) => `<div class="swatch-row"><i style="background:${h}"></i><div><strong>${n}</strong> <span class="mono">${h}</span><div class="caption">${r}</div></div></div>`).join("");
-    const type = [["Display", "40 / 48 · 600", "display"], ["H1", "28 / 34 · 600", "h1"], ["H2", "22 / 28 · 600", "h2"], ["H3", "18 / 26 · 600", "h3"], ["Body large", "18 / 28 · 400", "bl"], ["Body", "15 / 24 · 400", "b"], ["Body small", "13 / 20 · 400", "bs"], ["Caption", "12 / 16 · 500", "c"], ["Button", "14 / 20 · 600", "btn"], ["Label", "13 / 16 · 600", "lb"], ["Code", "13 / 20 · mono", "code"]];
-    const shown = { display: `<div style="font-size:40px;line-height:48px;font-weight:600;letter-spacing:-.03em">Rating 4.27</div>`, h1: `<h1 style="font-size:28px">Welcome back, Ibrahim</h1>`, h2: `<h2 style="font-size:22px">Upcoming lectures</h2>`, h3: `<h3 style="font-size:18px">Dynamic Programming</h3>`, bl: `<p style="font-size:18px">Practice. Compete. Keep the record.</p>`, b: `<p>Attendance is currently open.</p>`, bs: `<p style="font-size:13px">Showing 21–40 of 124</p>`, c: `<p class="caption">Last qualifying activity</p>`, btn: `<span style="font-weight:600;font-size:14px">Join live session</span>`, lb: `<span style="font-weight:600;font-size:13px">Email</span>`, code: `<span class="mono">ibrahimkediramdela2211</span>` };
-    const space = [["4", "Icon gap"], ["8", "Tight stack"], ["12", "Table cell y"], ["16", "Form fields, mobile page padding"], ["24", "Section gap, modal padding"], ["32", "Desktop page padding"], ["40", "Large section"], ["48", "Auth panel"], ["64", "Cover sections"]];
+    const type = [["Display", "40 / 48 · mono 700", "display"], ["H1", "28 / 34 · 700", "h1"], ["H2", "22 / 28 · 600", "h2"], ["H3", "18 / 26 · 600", "h3"], ["Body", "15 / 24 · 400", "b"], ["Caption", "12 / 16 · mono", "c"], ["Button", "13 / 20 · mono 650", "btn"], ["Code", "13 / 20 · JetBrains", "code"]];
+    const shown = { display: `<div class="mono" style="font-size:40px;line-height:48px;font-weight:700;letter-spacing:-.04em;color:var(--rank)">rating 4.27</div>`, h1: `<h1 style="font-size:28px">Welcome back, Ibrahim</h1>`, h2: `<h2 style="font-size:22px">Standings</h2>`, h3: `<h3 style="font-size:18px">Dynamic Programming</h3>`, b: `<p>Attendance code window is open.</p>`, c: `<p class="caption">last AC · Oct 12</p>`, btn: `<span class="mono" style="font-weight:700;font-size:13px">submit // AC</span>`, code: `<span class="mono">ibrahimkediramdela2211</span>` };
+    const space = [["4", "Icon gap"], ["8", "Tight stack"], ["12", "Table cell y"], ["16", "Form fields"], ["24", "Section gap"], ["32", "Page padding"]];
     return `<div class="spec-board">
-      <div><p class="kicker">Foundations</p><h1>Color, type, spacing</h1><p class="secondary">IBM Plex Sans for UI. IBM Plex Mono for handles, codes, and scores. Toggle the toolbar to preview both themes on real screens.</p></div>
+      <div><p class="kicker">Design system</p><h1>Foundations</h1><p class="secondary">Colors sampled from the logo — navy #083B5B, indigo #303664, magenta #5D1C4D. Sky lift for dark actions. Space Grotesk + JetBrains Mono.</p></div>
       <div class="swatch-grid"><article class="card"><h2>Light</h2>${sw(light)}</article><article class="card"><h2>Dark</h2>${sw(dark)}</article></div>
       <article class="card"><h2>Type</h2>${type.map(([n, m, k]) => `<div class="type-row"><div><strong>${n}</strong><div class="caption">${m}</div></div><div>${shown[k]}</div></div>`).join("")}</article>
-      <article class="card"><h2>Spacing</h2><p class="caption">8px base. 4px only for icon gaps and compact table padding.</p>${space.map(([n, use]) => `<div class="space-row"><span class="mono">${n}</span><div class="space-bar" style="width:${n}px"></div><span>${use}</span></div>`).join("")}</article>
+      <article class="card"><h2>Spacing</h2><p class="caption">8px base. Verdict chips use 2px radius.</p>${space.map(([n, use]) => `<div class="space-row"><span class="mono">${n}</span><div class="space-bar" style="width:${n}px"></div><span>${use}</span></div>`).join("")}</article>
       <div class="grid-3">
-        <article class="card"><h3>Radius</h3><p class="caption">Controls 8 · Cards 12 · Modals 16</p></article>
-        <article class="card"><h3>Shadow</h3><p class="caption">One soft card shadow. No glass, no heavy glow.</p></article>
-        <article class="card"><h3>Icons</h3><div class="cluster" style="margin-top:8px">${["dashboard", "megaphone", "book", "check", "trophy", "chart", "user", "bell", "search", "alert", "lock", "flame"].map((n) => `<span title="${n}">${icon(n)}</span>`).join("")}</div></article>
+        <article class="card"><h3>Radius</h3><p class="caption">Controls 2 · Badges 2 · No card shells</p></article>
+        <article class="card"><h3>Texture</h3><p class="caption">28px grid + hatch. Sections use hairline rules, not boxes.</p></article>
+        <article class="card"><h3>Verdicts</h3><div class="cluster" style="margin-top:8px">${badge("solved", "AC")}${badge("failed", "WA")}${badge("pending", "Pending")}${badge("live", "Live")}</div></article>
       </div>
+      <article class="card"><h2>Brand mark</h2><p class="caption" style="margin-bottom:12px">Moon + keyboard logo · PNG for chrome · SVG favicon</p>
+        <div class="cluster" style="align-items:center;gap:20px">${brandMark()}${brandMark(72, "hero")}<img src="assets/ncc-mark.svg" width="40" height="40" alt="" style="color:var(--primary)" /></div>
+      </article>
+      <article class="card"><h2>Icons</h2><p class="caption" style="margin-bottom:12px">Square-cap stroke set · 1.5px</p>
+        <div class="icon-grid">${[["dashboard","Board"],["trophy","Contest"],["rank","Standings"],["code","Problems"],["hash","Topics"],["ac","AC"],["wa","WA"],["flame","Streak"],["chart","Progress"],["terminal","Terminal"],["megaphone","Announce"],["book","Lecture"],["calendar","Schedule"],["clock","Clock"],["users","Team"],["user","Profile"],["bell","Alerts"],["lock","Restricted"],["shield","2FA"],["search","Search"],["filter","Filter"],["link","Handle"],["refresh","Fetch"],["alert","Warn"],["info","Info"],["plus","Add"],["menu","Menu"],["logout","Logout"],["eye","Reveal"],["check","Check"],["star","Star"]].map(([n, l]) => `<div class="icon-cell" title="${n}">${icon(n, 22)}<span class="mono">${l}</span></div>`).join("")}</div>
+      </article>
     </div>`;
   },
 });
@@ -48,9 +59,9 @@ addScreen({
   id: "components", order: 300, group: "03 Components", title: "Components",
   links: [["Login", "login"]],
   render() {
-    const kinds = [["published", "Published"], ["draft", "Draft"], ["active", "Active"], ["upcoming", "Upcoming"], ["completed", "Completed"], ["solved", "Solved"], ["unsolved", "Not solved"], ["pending", "Verification pending"], ["failed", "Verification failed"], ["restricted", "Restricted"], ["active-account", "Active account"], ["warning", "Warning"], ["live", "Live"]];
+    const kinds = [["published", "Published"], ["draft", "Draft"], ["active", "Active"], ["upcoming", "Upcoming"], ["completed", "Completed"], ["solved", "AC"], ["unsolved", "Not solved"], ["pending", "Pending"], ["failed", "WA"], ["restricted", "Restricted"], ["active-account", "Active"], ["warning", "Warning"], ["live", "Live"]];
     return `<div class="spec-board">
-      <div><p class="kicker">Components</p><h1>Reusable parts</h1><p class="secondary">Names match the build: Button/Primary, Input/Text, Badge/Warning, Modal/Confirmation.</p></div>
+      <div><p class="kicker">Components</p><h1>UI primitives</h1><p class="secondary">Open sections, mono controls, AC/WA verdicts, and tabular standings — no boxed cards.</p></div>
       <article class="card stack"><p class="component-label">Button/Primary · Secondary · Outline · Ghost · Danger · Success</p>
         <div class="cluster">${btn("Primary")}${btn("Secondary", { variant: "secondary" })}${btn("Outline", { variant: "outline" })}${btn("Ghost", { variant: "ghost" })}${btn("Danger", { variant: "danger" })}${btn("Success", { variant: "success" })}</div>
         <div class="cluster">${btn("Small", { size: "sm" })}${btn("Medium")}${btn("Large", { size: "lg" })}${btn("Disabled", { disabled: true })}${btn("Loading", { loading: true })}</div>
@@ -70,10 +81,15 @@ addScreen({
         ${field({ label: "Disabled", value: "Locked field", disabled: true })}
         <div class="span-2">${field({ label: "Textarea", type: "textarea", value: "States, transitions, and how to read a DP problem before coding." })}</div>
       </div></article>
-      <article class="card"><p class="component-label">Badge</p><div class="cluster">${kinds.map(([k, l]) => badge(k, l)).join("")}</div></article>
+      <article class="card"><p class="component-label">Badge · verdict chips</p><div class="cluster">${kinds.map(([k, l]) => badge(k, l)).join("")}</div></article>
+      <article class="card"><p class="component-label">Icon/Nav · contest set</p><div class="cluster" style="margin-top:4px;gap:12px">${[["dashboard"],["trophy"],["rank"],["code"],["flame"],["ac"],["wa"],["users"],["terminal"]].map(([n]) => `<span title="${n}" style="color:var(--primary)">${icon(n, 22)}</span>`).join("")}</div></article>
+      <article class="card"><p class="component-label">Motifs · letters · clock · tiers · strip</p>
+        <div class="cluster" style="margin-bottom:12px">${problemLetter("A","solved")}${problemLetter("B","solved")}${problemLetter("C")}${problemLetter("D","failed")}${problemLetter("E")}<span class="clock-chip">01:42:08</span><span class="rank-chip tier-5"><i></i>tier 5</span></div>
+        ${scoreboardStrip([["rank", "#12"],["score", "742"],["penalty", "1240"],["verdict", "AC × 4"]])}
+      </article>
       <div class="grid-2">
-        <article class="card"><p class="component-label">Card/Rating</p><p class="stat-label">NCC_DSA rating</p><p class="stat-value num">4.27 / 5.00</p><div style="margin-top:8px">${stars(4.27)}</div><p class="stat-hint up">+0.32 this period</p></article>
-        <article class="card"><p class="component-label">Card/Streak</p><p class="stat-label">Current streak</p><p class="stat-value">12 days</p><p class="stat-hint">Longest streak · 21 days</p></article>
+        <article class="card"><p class="component-label">Stat/Rating</p><p class="stat-label">NCC_DSA rating</p><p class="stat-value num">4.27 / 5.00</p><div style="margin-top:8px">${stars(4.27)}</div><p class="stat-hint up">+0.32 this period</p></article>
+        <article class="card"><p class="component-label">Stat/Streak</p><p class="stat-label">AC streak</p><p class="stat-value num">${icon("flame", 22)} 12 days</p><p class="stat-hint">Longest · 21 days</p></article>
       </div>
       <article class="card"><p class="component-label">Table/ContestResult · selected and current-user rows</p>${smartTable(["Rank", "Participant", "Handle", "Score", "Penalty"], [{ cells: ["#11", "Abel Girma", "abel_g", "760", "1120"], className: "is-selected" }, { cells: ["#12", "Ibrahim Kedir", "ibrahimkediramdela2211", "742", "1240"], className: "is-me" }])}</article>
       <div class="grid-2">

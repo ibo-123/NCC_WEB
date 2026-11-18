@@ -7,7 +7,7 @@ addScreen({
   links: [["Users", "admin-users"], ["Teams", "admin-teams"], ["Lectures", "admin-lectures"], ["Contests", "admin-contests"], ["Problems", "admin-problems"], ["Rating", "admin-rating"], ["Restricted", "admin-restricted"]],
   render() {
     const stats = [["Students", "128"], ["Active", "121"], ["Restricted", "7"], ["Teams", "24"], ["Upcoming lectures", "3"], ["Attendance open", "1"], ["Team weeks", "1"], ["Average rating", "3.84"]];
-    return admin("admin-dashboard", [["Dashboard"]], pageHead("Administration", "Individual and Group competition on one platform.") + `<div class="grid-4">${stats.map(([l, v]) => `<article class="card mini"><p class="stat-label">${l}</p><p class="stat-value num" style="font-size:26px">${v}</p></article>`).join("")}</div><article class="card"><h2>Recent activity</h2><ul class="timeline" style="margin-top:12px">${DATA.adminActivity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></article>`);
+    return admin("admin-dashboard", [["Dashboard"]], pageHead("Administration", "Contest board control — users, rounds, fetches, and restrictions.") + `<div class="grid-4">${stats.map(([l, v]) => `<article class="card mini"><p class="stat-label">${l}</p><p class="stat-value num" style="font-size:26px">${v}</p></article>`).join("")}</div><article class="card"><h2>Recent activity</h2><ul class="timeline" style="margin-top:12px">${DATA.adminActivity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></article>`);
   },
 });
 

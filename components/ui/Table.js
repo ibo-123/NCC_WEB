@@ -8,8 +8,8 @@ import { cx } from "./cx.js";
  */
 export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, empty = "Nothing to show.", caption }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card">
-      <table className="w-full border-collapse">
+    <div className="overflow-x-auto border-y border-border bg-transparent">
+      <table className="w-full border-collapse font-mono text-[13px]">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>
@@ -18,7 +18,7 @@ export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, 
                 key={c.key}
                 scope="col"
                 className={cx(
-                  "border-b border-border bg-sunken px-3.5 py-3 text-xs font-semibold tracking-wider text-muted uppercase",
+                  "border-b border-border bg-sunken px-3.5 py-3 text-[11px] font-bold tracking-[0.08em] text-muted uppercase",
                   c.align === "right" ? "text-right" : "text-left",
                 )}
               >
@@ -60,7 +60,7 @@ export function DataTable({ columns, rows, rowKey = (row) => row.id, highlight, 
 }
 
 const PAGER_ITEM =
-  "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm font-medium no-underline";
+  "inline-flex h-9 min-w-9 items-center justify-center rounded border px-3 font-mono text-[13px] font-medium no-underline";
 
 /** Which page numbers to show: first, last, and a window around the current page, with gaps as null. */
 export function pageWindow(page, totalPages, radius = 1) {

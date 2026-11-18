@@ -2,11 +2,12 @@ import Link from "next/link";
 import { cx } from "./cx.js";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-lg border font-semibold whitespace-nowrap no-underline cursor-pointer " +
+  "inline-flex items-center justify-center gap-2 rounded border font-mono text-[13px] font-semibold tracking-tight whitespace-nowrap no-underline cursor-pointer " +
   "disabled:opacity-45 disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:pointer-events-none";
 
 export const BUTTON_VARIANTS = {
-  primary: "border-transparent bg-primary text-primary-text hover:bg-primary-hover",
+  primary:
+    "border-transparent text-white [background-image:var(--brand-grad)] bg-[#083b5b] hover:brightness-110",
   secondary: "border-transparent bg-secondary text-secondary-text",
   outline: "border-border-strong bg-transparent text-fg hover:bg-sunken",
   ghost: "border-transparent bg-transparent text-fg-2 hover:bg-sunken hover:text-fg",

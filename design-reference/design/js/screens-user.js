@@ -8,14 +8,15 @@ addScreen({
       active: "dashboard",
       crumbs: [["Dashboard"]],
       content: `
-        ${pageHead(`Welcome back, ${u.first}`, "Individual practice and Group competition on one account.", btn("Join live session", { nav: "lecture-live" }))}
+        ${pageHead(`Welcome back, ${u.first}`, "Your individual and group progress in one place.", `${btn("Join live session", { nav: "lecture-live" })}`)}
+        ${scoreboardStrip([["Rating", u.rating.toFixed(2) + " / 5"],["AC streak", u.streak + " days"],["Team", t.name],["Sheet", u.solved + " / " + u.total]])}
         <div class="hero-grid">
           <article class="card">
             <p class="stat-label">NCC_DSA rating</p>
-            <p class="stat-value num">${u.rating.toFixed(2)} <span style="font-size:18px;color:var(--muted)">/ 5.00</span></p>
+            <p class="stat-value num tier-${tierForRating(u.rating)}">${u.rating.toFixed(2)} <span style="font-size:18px;color:var(--muted)">/ 5.00</span></p>
             <div style="margin:8px 0">${stars(u.rating)}</div>
             <p class="stat-hint up">+${u.change.toFixed(2)} this period</p>
-            <div style="margin-top:12px">${btn("View rating", { variant: "outline", size: "sm", nav: "rating" })}</div>
+            <div class="cluster" style="margin-top:10px"><span class="rank-chip tier-${tierForRating(u.rating)}"><i></i>tier ${tierForRating(u.rating)}</span>${btn("View rating", { variant: "outline", size: "sm", nav: "rating" })}</div>
           </article>
           <article class="card">
             <p class="stat-label">Individual streak</p>
@@ -27,19 +28,19 @@ addScreen({
           </article>
           <div class="mini-stats span-row">
             <article class="card mini"><p class="stat-label">Attendance</p><p class="stat-value num">${u.attendancePct}%</p><p class="stat-hint">${u.attended} attended · ${u.missed} missed</p></article>
-            <article class="card mini"><p class="stat-label">Problems solved</p><p class="stat-value num">${u.solved}</p><p class="stat-hint">${u.solved} / ${u.total} on the sheet</p></article>
+            <article class="card mini"><p class="stat-label">Sheet</p><div class="cluster" style="margin-top:10px">${problemLetter("A","solved")}${problemLetter("B","solved")}${problemLetter("C")}${problemLetter("D","failed")}${problemLetter("E")}</div><p class="stat-hint" style="margin-top:8px">${u.solved} / ${u.total} solved</p></article>
             <article class="card mini"><p class="stat-label">Team</p><p class="stat-value" style="font-size:20px">${t.name}</p><p class="stat-hint">${t.memberCount} / ${t.maxMembers} members</p></article>
           </div>
         </div>
         <div class="grid-2">
-          <article class="card"><div class="spread"><h2>Upcoming lectures</h2><a data-nav="lectures" href="#lectures">All lectures</a></div>${lectureRows()}</article>
-          <article class="card"><div class="spread"><h2>Individual contests</h2><a data-nav="contests" href="#contests">All</a></div>${contestRows(DATA.contests.filter((c) => c.status === "Upcoming"))}<div class="spread" style="margin-top:16px"><h2>Team contests</h2><a data-nav="team-contests" href="#team-contests">All</a></div>${contestRows(DATA.teamContests.filter((c) => c.status !== "Completed").slice(0, 2))}</article>
+          <section class="card"><div class="section-head"><h2>Upcoming lectures</h2><a data-nav="lectures" href="#lectures">All lectures</a></div>${lectureRows()}</section>
+          <section class="card"><div class="section-head"><h2>Individual contests</h2><a data-nav="contests" href="#contests">All</a></div>${contestRows(DATA.contests.filter((c) => c.status === "Upcoming"))}<div class="section-head" style="margin-top:20px"><h2>Team contests</h2><a data-nav="team-contests" href="#team-contests">All</a></div>${contestRows(DATA.teamContests.filter((c) => c.status !== "Completed").slice(0, 2))}</section>
         </div>
         <div class="grid-2">
-          <article class="card"><div class="spread"><h2>Announcements</h2><a data-nav="announcements" href="#announcements">View all</a></div>
+          <section class="card"><div class="section-head"><h2>Announcements</h2><a data-nav="announcements" href="#announcements">View all</a></div>
             ${DATA.announcements.slice(0, 3).map((a) => `<div class="list-row"><div><strong>${a.title}</strong><div class="caption">${a.date} · ${a.type}</div></div>${badge(a.type === "Important" ? "warning" : "published", a.type)}</div>`).join("")}
-          </article>
-          <article class="card"><h2>Recent activity</h2><ul class="timeline" style="margin-top:12px">${DATA.activity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></article>
+          </section>
+          <section class="card"><div class="section-head"><h2>Recent activity</h2></div><ul class="timeline">${DATA.activity.map((a) => `<li><strong>${a[0]}</strong><div class="caption">${a[1]} · ${a[2]}</div></li>`).join("")}</ul></section>
         </div>`,
     });
   },
@@ -164,7 +165,7 @@ addScreen({
     const u = DATA.user;
     return appShell({
       active: "streak", crumbs: [["Individual streak"]],
-      content: pageHead("Individual streak", "Personal qualifying activity only. Team streak is separate.") + `<div class="cluster">${btn("Team streak", { variant: "outline", size: "sm", nav: "team-streak" })}</div><div class="grid-2"><article class="card"><p class="stat-label">Current streak</p><p class="stat-value">${u.streak} days</p></article><article class="card"><p class="stat-label">Longest streak</p><p class="stat-value">${u.longest} days</p></article></div><article class="card stack"><h2>Activity</h2><p class="secondary">Last qualifying activity · ${u.lastActivity}</p>${heatCalendar()}</article>`,
+      content: pageHead("Individual streak", "Personal AC / qualifying activity only. Team streak is separate.") + `<div class="cluster">${btn("Team streak", { variant: "outline", size: "sm", nav: "team-streak" })}</div><div class="grid-2"><article class="card"><p class="stat-label">Current AC streak</p><p class="stat-value">${icon("flame", 22)} ${u.streak} days</p></article><article class="card"><p class="stat-label">Longest streak</p><p class="stat-value num">${u.longest} days</p></article></div><article class="card stack"><h2>Activity</h2><p class="secondary">Last qualifying activity · ${u.lastActivity}</p>${heatCalendar()}</article>`,
     });
   },
 });
@@ -193,10 +194,10 @@ addScreen({
   links: [["Admin reopen", "admin-reopen"], ["Login", "login"]],
   render() {
     return `<div class="lock"><article class="lock-card card stack">
-      <div class="side-head" style="padding:0"><span class="mark">N</span><span><span class="brand-name">NCC_DSA</span><span class="brand-sub">Platform</span></span></div>
+      <div class="side-head" style="padding:0">${brandMark()}<span><span class="brand-name">NCC_DSA</span><span class="brand-sub">night code club</span></span></div>
       <div>${badge("restricted", "Restricted")}</div>
       <h1>Account access restricted</h1>
-      <p>Your NCC_DSA rating is below the required threshold. Your account currently has restricted access. Please contact the DSA Heads for assistance.</p>
+      <p>Your rating is below the required threshold. Contest access is locked until a DSA Head reopens the account.</p>
       <div class="card flat" style="background:var(--sunken)"><p class="stat-label">Current rating</p><p class="stat-value num">1.84 <span style="font-size:18px;color:var(--muted)">/ 5.00</span></p></div>
       <a class="btn btn-primary btn-md" href="mailto:dsa-heads@ncc.edu">Contact DSA Heads</a>
       <a data-nav="login" href="#login">Log out</a>

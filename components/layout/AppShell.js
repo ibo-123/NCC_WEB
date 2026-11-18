@@ -1,18 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Bell,
-  BookOpen,
-  CalendarCheck,
+  BarChart3,
   ClipboardList,
-  Code,
+  Code2,
+  Flame,
+  Hash,
   LayoutDashboard,
   Megaphone,
   Menu,
   Settings,
+  SquareCheck,
+  Terminal,
   Trophy,
   Users,
   Video,
@@ -21,20 +25,36 @@ import {
 import { cx } from "@/components/ui/cx.js";
 import { ThemeToggle } from "./ThemeToggle.js";
 
-// Icons are referenced by name so server components can pass plain data to this client component.
+// Contest-board icons — referenced by name so server components pass plain data.
 const ICONS = {
   dashboard: LayoutDashboard,
   announcements: Megaphone,
   lectures: Video,
-  attendance: CalendarCheck,
-  problems: Code,
-  topics: BookOpen,
+  attendance: SquareCheck,
+  problems: Code2,
+  topics: Hash,
   contests: Trophy,
+  results: BarChart3,
+  streak: Flame,
+  terminal: Terminal,
   notifications: Bell,
   users: Users,
   audit: ClipboardList,
   settings: Settings,
 };
+
+function BrandMark({ className }) {
+  return (
+    <Image
+      className={cx("rounded-[6px] object-cover", className)}
+      src="/brand/ncc-logo.png"
+      alt=""
+      width={32}
+      height={32}
+      priority
+    />
+  );
+}
 
 function isActive(pathname, href) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -74,13 +94,13 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
         )}
       >
         <div className="flex items-center gap-2.5 px-2 pt-1 pb-3">
-          <span className="grid size-8 flex-none place-items-center rounded-lg bg-primary font-semibold text-primary-text">
-            {brand.mark ?? brand.name.slice(0, 1)}
+          <span className="grid size-9 flex-none place-items-center overflow-hidden rounded-[6px]">
+            {brand.mark && brand.mark !== "/" ? brand.mark : <BrandMark />}
           </span>
-          <span className="leading-[1.1] font-semibold tracking-tight">
+          <span className="font-mono leading-[1.1] font-bold tracking-tight">
             {brand.name}
             {brand.sub ? (
-              <span className="block text-[11px] font-medium tracking-wide text-sidebar-muted uppercase">{brand.sub}</span>
+              <span className="block font-mono text-[10px] font-medium tracking-[0.08em] text-sidebar-muted uppercase">{brand.sub}</span>
             ) : null}
           </span>
           <button
@@ -111,7 +131,7 @@ export function AppShell({ brand, sections, user, breadcrumbs = [], footer, chil
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-                      "flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium no-underline",
+                      "flex min-h-10 items-center gap-2.5 rounded px-2.5 py-2 text-sm font-medium no-underline",
                       active ? "bg-sidebar-active text-sidebar-active-fg" : "text-sidebar-fg hover:bg-sidebar-hover",
                     )}
                   >

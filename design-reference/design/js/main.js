@@ -25,7 +25,7 @@ function renderNav(screen) {
   const previous = document.getElementById("v-search");
   const keep = document.activeElement === previous;
   const pos = keep ? previous.selectionStart : 0;
-  nav.innerHTML = `<p class="viewer-kicker">NCC_DSA</p><strong style="display:block;margin-bottom:10px">Visual specification</strong><label class="sr-only" for="v-search">Find a screen</label><input id="v-search" class="v-search" placeholder="Find a screen" value="${q.replace(/"/g, "&quot;")}" />${groups}`;
+  nav.innerHTML = `<p class="viewer-kicker">NCC DSA</p><strong style="display:block;margin-bottom:10px;font-family:var(--mono)">Visual specification</strong><label class="sr-only" for="v-search">Find a screen</label><input id="v-search" class="v-search" placeholder="Find a screen" value="${q.replace(/"/g, "&quot;")}" />${groups}`;
   if (keep) {
     const input = document.getElementById("v-search");
     input.focus();

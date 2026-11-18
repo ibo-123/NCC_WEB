@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <!-- Crescent (open right) -->
+  <path
+    fill="currentColor"
+    d="M36.8 7.2c-14.2.4-25.6 12-25.6 26.3 0 14.5 11.7 26.3 26.2 26.5-11.4 3.6-24.6-.8-31.4-11.3C-1.2 37.6.8 20.6 12.6 10.8 20.4 4.4 29.4 2.8 36.8 7.2Z"
+  />
+  <!-- Keyboard frame -->
+  <rect x="29.5" y="21.5" width="27" height="21" rx="3.5" stroke="currentColor" stroke-width="2.4"/>
+  <!-- Keys + space + L-enter -->
+  <g fill="currentColor">
+    <rect x="33.2" y="25.2" width="3.4" height="3.4" rx=".7"/>
+    <rect x="38.2" y="25.2" width="3.4" height="3.4" rx=".7"/>
+    <rect x="43.2" y="25.2" width="3.4" height="3.4" rx=".7"/>
+    <rect x="48.2" y="25.2" width="3.4" height="3.4" rx=".7"/>
+    <rect x="33.2" y="30.4" width="3.4" height="3.4" rx=".7"/>
+    <rect x="38.2" y="30.4" width="3.4" height="3.4" rx=".7"/>
+    <rect x="43.2" y="30.4" width="3.4" height="3.4" rx=".7"/>
+    <path d="M48.2 30.4h5.6v8.6H45.4v-3.4h2.8V30.4Z"/>
+    <rect x="33.2" y="35.6" width="11.2" height="3.4" rx=".7"/>
+  </g>
+</svg>

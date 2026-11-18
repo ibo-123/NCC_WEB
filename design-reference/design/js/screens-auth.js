@@ -1,6 +1,6 @@
 function loginCard(extra = "") {
   return `${extra}
-    <div><p class="kicker">NCC_DSA</p><h1>Welcome back</h1><p class="secondary">Sign in with your email and password.</p></div>
+    <div><p class="kicker">Sign in</p><h1>Welcome back</h1><p class="secondary">Use your NCC email to open the contest board.</p></div>
     <form class="stack">
       ${field({ label: "Email", type: "email", value: extra ? "ibrahim.kedir@ncc.edu" : "", placeholder: "you@ncc.edu", id: "login-email" })}
       ${field({ label: "Password", type: "password", id: "login-pass", placeholder: "Password" })}
@@ -24,7 +24,7 @@ addScreen({
 addScreen({
   id: "login-loading", order: 420, group: "04 Authentication", title: "Login loading",
   links: [["Success", "dashboard"]],
-  render: () => authLayout(`<div><p class="kicker">NCC_DSA</p><h1>Welcome back</h1></div>
+  render: () => authLayout(`<div><p class="kicker">Sign in</p><h1>Welcome back</h1></div>
     ${field({ label: "Email", type: "email", value: "ibrahim.kedir@ncc.edu", disabled: true })}
     ${field({ label: "Password", type: "password", value: "secret", disabled: true })}
     ${btn("Signing in", { loading: true, block: true, disabled: true })}`),
@@ -40,7 +40,7 @@ addScreen({
   id: "admin-login", order: 440, group: "04 Authentication", title: "Admin login",
   note: "Same sign-in screen. This account lands on the admin dashboard.",
   links: [["Admin dashboard", "admin-dashboard"], ["Student login", "login"]],
-  render: () => authLayout(`<div><p class="kicker">NCC_DSA</p><h1>Welcome back</h1><p class="secondary">Sign in with your email and password.</p></div>
+  render: () => authLayout(`<div><p class="kicker">Admin</p><h1>Welcome back</h1><p class="secondary">Administrator access to the contest board.</p></div>
     ${field({ label: "Email", type: "email", value: "marta.alemu@ncc.edu" })}
     ${field({ label: "Password", type: "password", value: "password" })}
     ${btn("Log in", { nav: "admin-dashboard", block: true })}
@@ -50,7 +50,7 @@ addScreen({
 addScreen({
   id: "register", order: 450, group: "04 Authentication", title: "Register",
   links: [["Invalid form", "register-invalid"], ["Existing account", "register-exists"], ["Success", "register-success"], ["Login", "login"]],
-  render: () => authLayout(`<div><p class="kicker">NCC_DSA</p><h1>Create your account</h1><p class="secondary">Use the email your instructors already know.</p></div>
+  render: () => authLayout(`<div><p class="kicker">Register</p><h1>Create your account</h1><p class="secondary">Use the email your instructors already know.</p></div>
     <form class="stack">
       ${field({ label: "Name", placeholder: "Your name" })}
       ${field({ label: "Email", type: "email", placeholder: "you@ncc.edu" })}
@@ -64,7 +64,7 @@ addScreen({
 addScreen({
   id: "register-invalid", order: 460, group: "04 Authentication", title: "Invalid registration",
   links: [["Register", "register"]],
-  render: () => authLayout(`<div><h1>Create your account</h1></div>
+  render: () => authLayout(`<div><p class="kicker">Register</p><h1>Create your account</h1></div>
     <div class="callout danger" role="alert"><strong>Check the form</strong>Fix the highlighted fields and try again.</div>
     ${field({ label: "Name", value: "", error: "Enter your name." })}
     ${field({ label: "Email", type: "email", value: "ibrahim", error: "Enter a valid email address." })}

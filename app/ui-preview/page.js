@@ -17,6 +17,7 @@ const sections = [
       { href: "/lectures", label: "Lectures", icon: "lectures" },
       { href: "/problems", label: "Problems", icon: "problems" },
       { href: "/contests", label: "Contests", icon: "contests" },
+      { href: "/streak", label: "AC streak", icon: "streak" },
     ],
   },
   { title: "Admin", items: [{ href: "/admin/users", label: "Users", icon: "users" }] },
@@ -34,24 +35,24 @@ export default function UiPreview() {
     { key: "rank", header: "#", align: "right" },
     { key: "name", header: "Name" },
     { key: "rating", header: "Rating", align: "right" },
-    { key: "status", header: "Status", render: (r) => <Badge tone={r.status}>{r.status === "success" ? "solved" : r.status}</Badge> },
+    { key: "status", header: "Status", render: (r) => <Badge tone={r.status}>{r.status === "success" ? "AC" : r.status === "unsolved" ? "—" : r.status}</Badge> },
   ];
   return (
     <AppShell
-      brand={{ name: "NCC DSA", sub: "Student", mark: "N" }}
+      brand={{ name: "NCC_DSA", sub: "night code club" }}
       sections={sections}
-      user={{ name: "Selam Tadesse", detail: "Student" }}
+      user={{ name: "Selam Tadesse", detail: "rating 4.27" }}
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "UI preview" }]}
     >
       <PageHeader
         title="Shared components"
-        description="Every control below has a working handler or link."
+        description="Contest-board controls — AC/WA badges, mono stats, sharp corners."
         actions={<ButtonLink href="/ui-preview?page=2" variant="outline">Link button</ButtonLink>}
       />
       <div className="grid grid-cols-1 gap-4 min-[800px]:grid-cols-3">
-        <Stat label="Rating" value="1840" hint="+24 this month" trend="up" />
-        <Stat label="Solved" value="212" hint="of 400" />
-        <Stat label="Streak" value="7" hint="days" trend="down" />
+        <Stat label="Rating" value="4.27" hint="+0.32 this period" trend="up" />
+        <Stat label="AC streak" value="12" hint="days" />
+        <Stat label="Solved" value="82" hint="of 120" trend="up" />
       </div>
       <Card>
         <h2 className="m-0 mb-3 text-lg font-semibold">Buttons and badges</h2>

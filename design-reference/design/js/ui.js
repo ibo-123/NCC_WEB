@@ -13,44 +13,63 @@ function screenGroups() {
   return groups;
 }
 
+/* Sharp contest-board glyphs — square caps, 1.5 stroke, geometric. */
 const PATHS = {
-  dashboard: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
-  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
-  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  dashboard: '<path d="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z"/>',
+  bell: '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 8H4c0-2 2-3 2-8"/><path d="M10 20h4"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
-  logout: '<path d="M9 6H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4"/><path d="M10 12h10"/><path d="m16 8 4 4-4 4"/>',
-  user: '<circle cx="12" cy="8" r="3.2"/><path d="M5 19.2c1.4-3 3.6-4.5 7-4.5s5.6 1.5 7 4.5"/>',
-  megaphone: '<path d="m4 10 12-5v14L4 14v-4z"/><path d="M8 14.5V18a2 2 0 0 0 2 2h0"/>',
-  book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/>',
-  check: '<path d="m5 12 5 5L20 7"/>',
-  trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5A2.5 2.5 0 0 0 7 9"/><path d="M17 6h2.5A2.5 2.5 0 0 1 17 9"/><path d="M12 14v3M8 20h8"/>',
-  chart: '<path d="M4 19V5M4 19h16"/><path d="m7 14 4-5 3 3 5-6"/>',
-  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/>',
+  logout: '<path d="M10 5H5v14h5"/><path d="M12 12h9"/><path d="m17 8 4 4-4 4"/>',
+  user: '<circle cx="12" cy="8" r="3"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/>',
+  megaphone: '<path d="M4 10h3l11-5v14L7 14H4z"/><path d="M7 14v5h3"/>',
+  book: '<path d="M5 4h13v16H7a2 2 0 0 1-2-2V4z"/><path d="M5 18h12"/>',
+  check: '<path d="M5 12.5 10 17l9-10"/>',
+  ac: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="m7 12 3.5 3.5L17 9"/>',
+  wa: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M8 8l8 8M16 8l-8 8"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5v1a3 3 0 0 0 3 3"/><path d="M16 6h3v1a3 3 0 0 1-3 3"/><path d="M12 13v3M9 20h6M10 17h4"/>',
+  chart: '<path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   filter: '<path d="M4 6h16M7 12h10M10 18h4"/>',
-  alert: '<path d="M12 4 3 19h18L12 4z"/><path d="M12 10v4M12 16.5h.01"/>',
-  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
-  users: '<circle cx="9" cy="8" r="3"/><path d="M3.5 19c1.2-3 3.2-4.5 5.5-4.5S13.3 16 14.5 19"/><circle cx="17" cy="9" r="2.2"/><path d="M16 14.6c1.6.2 3 1.2 4 2.9"/>',
-  eye: '<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
-  link: '<path d="M10 13a5 5 0 0 0 7.1.5l1.4-1.4a5 5 0 0 0-7.1-7.1L10.2 6.2"/><path d="M14 11a5 5 0 0 0-7.1-.5l-1.4 1.4a5 5 0 0 0 7.1 7.1l1.2-1.2"/>',
-  info: '<circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/>',
-  flame: '<path d="M12 3s1 3 1 5c1.2-.8 2-2.2 2-2.2S17 8 17 11a5 5 0 1 1-10 0c0-1.2.6-2.2 1.2-3.1C8.5 9.2 8 11 8 11s.4-2.2 2-4.2C10.6 5.2 12 3 12 3z"/>',
-  shield: '<path d="M12 3 5 6v6c0 4.2 2.8 7.2 7 8.5 4.2-1.3 7-4.3 7-8.5V6l-7-3z"/>',
-  refresh: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',
+  alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v5M12 17.5v.5"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  users: '<circle cx="9" cy="8" r="2.8"/><path d="M3.5 20c1.2-3.2 3.2-4.8 5.5-4.8S13.3 16.8 14.5 20"/><circle cx="17" cy="9" r="2.2"/><path d="M15.5 14.8c1.8.3 3.3 1.4 4.5 3.2"/>',
+  eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
+  link: '<path d="M9 12a4 4 0 0 0 5.7.4l2-2a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M15 12a4 4 0 0 0-5.7-.4l-2 2a4 4 0 0 0 5.7 5.7l1-1"/>',
+  info: '<circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8v.5"/>',
+  flame: '<path d="M12 3c0 3 2 4 2 7a4 4 0 1 1-8 0c0-2 1-3.5 2-5 0 2 1 3 1 3S10 5 12 3z"/>',
+  shield: '<path d="M12 3 4 6v6c0 4.5 3 7.5 8 9 5-1.5 8-4.5 8-9V6l-8-3z"/>',
+  refresh: '<path d="M20 12a8 8 0 1 1-2.2-5.5"/><path d="M20 4v5h-5"/>',
+  star: '<path d="m12 3 2.2 5.3H20l-4.4 3.4 1.7 5.3L12 14.5 6.7 17l1.7-5.3L4 8.3h5.8L12 3z"/>',
+  code: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',
+  hash: '<path d="M9 4 7 20M17 4l-2 16M4 9h16M3 15h16"/>',
+  terminal: '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="m7 10 3 2-3 2M12 14h5"/>',
+  rank: '<path d="M4 20h16M7 20V11M12 20V4M17 20v-6"/>',
+  bracket: '<path d="M8 4H5v16h3M16 4h3v16h-3"/>',
 };
 
 function icon(name, size = 20) {
-  return `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name] || ""}</svg>`;
+  return `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${PATHS[name] || ""}</svg>`;
+}
+
+function brandMark(size = 36, variant = "box") {
+  const cls = variant === "hero" ? "mark mark-hero" : "mark";
+  return `<span class="${cls}" aria-hidden="true"><img src="assets/ncc-logo.png" width="${size}" height="${size}" alt="" /></span>`;
 }
 
 function badge(kind, label) {
   return `<span class="badge badge-${kind}"><i></i>${label}</span>`;
 }
 
+/** Five-slot rating meter (contest board) — replaces soft star glyphs. */
 function stars(value) {
   const v = Math.max(0, Math.min(5, Number(value)));
-  return `<span class="stars" style="--value:${v}" role="img" aria-label="${v.toFixed(2)} out of 5"><span class="stars-base" aria-hidden="true">★★★★★</span><span class="stars-fill" aria-hidden="true">★★★★★</span></span>`;
+  const slots = [0, 1, 2, 3, 4].map((i) => {
+    const fill = Math.max(0, Math.min(1, v - i));
+    return `<span class="meter-slot"><span class="meter-fill" style="width:${(fill * 100).toFixed(0)}%"></span></span>`;
+  }).join("");
+  return `<span class="rating-meter" role="img" aria-label="${v.toFixed(2)} out of 5">${slots}<span class="meter-label mono">${v.toFixed(2)}</span></span>`;
 }
 
 function bar(pct) {
@@ -122,7 +141,7 @@ function toast(tone, title, body) {
 }
 
 function emptyBlock(title, body, action) {
-  return `<div class="card empty"><div>${icon("info", 28)}</div><h2>${title}</h2><p class="secondary">${body || ""}</p>${action || ""}</div>`;
+  return `<div class="card empty"><div style="color:var(--primary)">${icon("terminal", 28)}</div><h2>${title}</h2><p class="secondary">${body || ""}</p>${action || ""}</div>`;
 }
 
 function otp(n, label) {
@@ -159,32 +178,31 @@ const USER_NAV = [
     ["dashboard", "Dashboard", "dashboard"],
     ["announcements", "Announcements", "megaphone"],
     ["lectures", "Lectures", "book"],
-    ["attendance", "Attendance", "check"],
+    ["attendance", "Attendance", "ac"],
     ["progress", "Progress", "chart"],
-    ["rating", "Rating", "star"],
+    ["rating", "Rating", "rank"],
     ["profile", "Profile", "user"],
   ]},
   { section: "Individual", items: [
     ["contests", "Contests", "trophy"],
-    ["results", "Results", "chart"],
+    ["results", "Results", "rank"],
     ["streak", "My streak", "flame"],
   ]},
   { section: "Group", items: [
     ["teams", "My team", "users"],
     ["team-contests", "Team contests", "trophy"],
-    ["team-results", "Team results", "chart"],
+    ["team-results", "Team results", "rank"],
     ["team-streak", "Team streak", "flame"],
   ]},
 ];
-PATHS.star = '<path d="m12 3 2.4 5.2L20 9l-4 3.8.9 5.7L12 16.8 7.1 18.5 8 12.8 4 9l5.6-.8L12 3z"/>';
 
 const ADMIN_NAV = [
   { section: "Overview", items: [["admin-dashboard", "Dashboard", "dashboard"]] },
   { section: "People", items: [["admin-users", "Users", "users"], ["admin-restricted", "Restricted", "lock"], ["admin-teams", "Teams", "users"]] },
-  { section: "Learning", items: [["admin-announcements", "Announcements", "megaphone"], ["admin-lectures", "Lectures", "book"], ["admin-attendance", "Attendance", "check"]] },
-  { section: "Competition", items: [["admin-contests", "Contests", "trophy"], ["admin-results", "Results", "chart"]] },
-  { section: "Practice", items: [["admin-problems", "Problems", "book"], ["admin-topics", "Topics", "filter"], ["admin-progress", "Progress", "chart"]] },
-  { section: "Performance", items: [["admin-rating", "Rating", "star"]] },
+  { section: "Learning", items: [["admin-announcements", "Announcements", "megaphone"], ["admin-lectures", "Lectures", "book"], ["admin-attendance", "Attendance", "ac"]] },
+  { section: "Competition", items: [["admin-contests", "Contests", "trophy"], ["admin-results", "Results", "rank"]] },
+  { section: "Practice", items: [["admin-problems", "Problems", "code"], ["admin-topics", "Topics", "hash"], ["admin-progress", "Progress", "chart"]] },
+  { section: "Performance", items: [["admin-rating", "Rating", "rank"]] },
 ];
 
 function appShell(o) {
@@ -197,8 +215,8 @@ function appShell(o) {
   return `<div class="app${o.navOpen ? " nav-open" : ""}">
     <aside class="sidebar" aria-label="${role === "admin" ? "Admin" : "Main"}">
       <a class="side-head" data-nav="${home}" href="#${home}" style="text-decoration:none;color:inherit">
-        <span class="mark">N</span>
-        <span><span class="brand-name">NCC_DSA</span><span class="brand-sub">${role === "admin" ? "Administration" : "Platform"}</span></span>
+        ${brandMark()}
+        <span><span class="brand-name">NCC_DSA</span><span class="brand-sub">${role === "admin" ? "admin" : "contest"}</span></span>
       </a>
       <nav>${nav}</nav>
       <div class="side-foot">
@@ -231,18 +249,37 @@ function authLayout(card) {
   return `<div class="auth">
     <section class="auth-brand">
       <div>
-        <div class="side-head" style="padding-left:0"><span class="mark">N</span><span><span class="brand-name">NCC_DSA</span><span class="brand-sub" style="color:var(--brand-panel-muted)">Platform</span></span></div>
-        <h2 style="margin-top:28px">Practice. Compete. Keep the record.</h2>
-        <p style="margin-top:12px;color:var(--brand-panel-muted);max-width:36ch">Lectures, attendance, contests, and verified solves in one place.</p>
+        <div class="side-head" style="padding-left:0">${brandMark()}<span><span class="brand-name">NCC_DSA</span><span class="brand-sub" style="color:var(--brand-panel-muted)">night code club</span></span></div>
+        <h2 style="margin-top:36px">Train. Contest. <span>Climb.</span></h2>
+        <p style="margin-top:14px;color:var(--brand-panel-muted);max-width:36ch;line-height:1.55">Practice sheets, weekly contests, and team streaks — built for competitive programmers.</p>
+        <div class="cluster" style="margin-top:22px"><span class="problem-letter solved">A</span><span class="problem-letter solved">B</span><span class="problem-letter">C</span><span class="problem-letter failed">D</span><span class="problem-letter">E</span></div>
       </div>
       <div class="brand-metrics">
-        <div><span>rating</span><span>4.27 / 5.00</span></div>
-        <div><span>streak</span><span>12 days</span></div>
-        <div><span>solved</span><span>82 / 120</span></div>
+        <div><span>Rating</span><span>4.27 / 5.00</span></div>
+        <div><span>AC streak</span><span>12 days</span></div>
+        <div><span>Solved</span><span>82 / 120</span></div>
+        <div><span>Team</span><span>Binary Hawks</span></div>
       </div>
     </section>
     <section class="auth-panel"><div class="auth-card">${card}</div></section>
   </div>`;
+}
+
+function problemLetter(letter, state = "") {
+  return `<span class="problem-letter ${state}">${letter}</span>`;
+}
+
+function scoreboardStrip(rows) {
+  return `<div class="scoreboard-strip">${rows.map(([l, v]) => `<div><span class="lbl">${l}</span><span class="val">${v}</span></div>`).join("")}</div>`;
+}
+
+function tierForRating(r) {
+  const n = Number(r);
+  if (n >= 4.5) return 5;
+  if (n >= 3.5) return 4;
+  if (n >= 2.5) return 3;
+  if (n >= 1.5) return 2;
+  return 1;
 }
 
 function lectureRows() {
