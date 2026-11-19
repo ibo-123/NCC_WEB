@@ -13,7 +13,7 @@ import { usePlatform } from "@/components/providers/PlatformProvider.js";
 import { statusToTone } from "@/lib/status.js";
 
 export default function AdminProgressPage() {
-  const { store } = usePlatform();
+  const { store, loadStudentProgress } = usePlatform();
   const [query, setQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -25,13 +25,17 @@ export default function AdminProgressPage() {
       .filter((u) => u.role === "student")
       .filter((u) => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
       .map((u) => {
-        const solved = publishedProblems.filter(
-          (p) => store.verifications[`${u.id}:${p.id}`]?.status === "solved",
-        ).length;
-        const pct = publishedProblems.length > 0 ? Math.round((solved / publishedProblems.length) * 100) : 0;
-        return { ...u, solved, total: publishedProblems.length, pct };
+        const summary = store.studentProgressSummaries?.[u.id];
+        const solved = summary
+          ? summary.solved
+          : publishedProblems.filter(
+              (p) => store.verifications[`${u.id}:${p.id}`]?.status === "solved",
+            ).length;
+        const total = summary ? summary.total : publishedProblems.length;
+        const pct = total > 0 ? Math.round((solved / total) * 100) : 0;
+        return { ...u, solved, total, pct };
       });
-  }, [store.users, store.verifications, publishedProblems, query]);
+  }, [store.users, store.verifications, store.studentProgressSummaries, publishedProblems, query]);
 
   return (
     <PlatformShell
@@ -93,7 +97,14 @@ export default function AdminProgressPage() {
             header: "Details",
             align: "right",
             render: (u) => (
-              <Button size="sm" variant="outline" onClick={() => setSelectedStudent(u)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  setSelectedStudent(u);
+                  await loadStudentProgress(u.id);
+                }}
+              >
                 Inspect
               </Button>
             ),

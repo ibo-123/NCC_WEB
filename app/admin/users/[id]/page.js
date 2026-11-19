@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PlatformShell } from "@/components/layout/PlatformShell.js";
 import { PageHeader } from "@/components/layout/AppShell.js";
@@ -18,8 +18,14 @@ import { formatDateTime, formatShortDate, statusToTone } from "@/lib/status.js";
 
 export default function AdminUserDetailPage() {
   const { id } = useParams();
-  const { store, reopenUser } = usePlatform();
+  const { store, reopenUser, loadStudentProgress } = usePlatform();
   const [confirmReopen, setConfirmReopen] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      loadStudentProgress(id);
+    }
+  }, [id, loadStudentProgress]);
 
   const user = store.users.find((u) => u.id === id);
   const team = user
@@ -181,8 +187,8 @@ export default function AdminUserDetailPage() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => {
-                    reopenUser(user.id);
+                  onClick={async () => {
+                    await reopenUser(user.id);
                     setConfirmReopen(false);
                   }}
                 >

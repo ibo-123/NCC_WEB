@@ -69,13 +69,17 @@ export default function AdminProblemsPage() {
     setFormOpen(true);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (!form.title.trim() || !form.url.trim()) {
       setFormError("Provide a problem title and external URL.");
       return;
     }
-    saveProblem(form);
+    const res = await saveProblem(form);
+    if (!res?.ok) {
+      setFormError(res?.error ?? "Unable to save problem.");
+      return;
+    }
     setFormOpen(false);
   }
 
@@ -170,21 +174,22 @@ export default function AdminProblemsPage() {
             align: "right",
             render: (p) => (
               <div className="inline-flex flex-wrap justify-end gap-1.5">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    saveProblem({
-                      ...p,
-                      contestId: p.externalRef?.contestId,
-                      index: p.externalRef?.index,
-                      titleSlug: p.externalRef?.titleSlug,
-                      status: p.status === "published" ? "draft" : "published",
-                    })
-                  }
-                >
-                  {p.status === "published" ? "Unpublish" : "Publish"}
-                </Button>
+                {p.status === "draft" ? (
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      saveProblem({
+                        ...p,
+                        contestId: p.externalRef?.contestId,
+                        index: p.externalRef?.index,
+                        titleSlug: p.externalRef?.titleSlug,
+                        status: "published",
+                      })
+                    }
+                  >
+                    Publish
+                  </Button>
+                ) : null}
                 <Button size="sm" variant="outline" onClick={() => openEdit(p)}>
                   Edit
                 </Button>
@@ -308,8 +313,8 @@ export default function AdminProblemsPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (deleteTarget) deleteProblem(deleteTarget.id);
+              onClick={async () => {
+                if (deleteTarget) await deleteProblem(deleteTarget.id);
                 setDeleteTarget(null);
               }}
             >

@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [twoFactorStep, setTwoFactorStep] = useState(false);
   const [otp, setOtp] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     const nextFieldErrors = {};
@@ -42,31 +42,32 @@ export default function LoginPage() {
     }
     setFieldErrors({});
     setLoading(true);
-    window.setTimeout(() => {
-      const res = login(email, password);
-      setLoading(false);
-      if (!res.ok) {
-        setError(res.error);
-        return;
-      }
-      if (res.requiresTwoFactor) {
-        setTwoFactorStep(true);
-        return;
-      }
-      if (res.user.status === "restricted") {
-        router.push("/restricted");
-      } else if (res.user.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
-    }, 220);
+    const res = await login(email, password);
+    setLoading(false);
+    if (!res.ok) {
+      if (res.fieldErrors) setFieldErrors(res.fieldErrors);
+      setError(res.error);
+      return;
+    }
+    if (res.requiresTwoFactor) {
+      setTwoFactorStep(true);
+      return;
+    }
+    if (res.user.status === "restricted") {
+      router.push("/restricted");
+    } else if (res.user.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/dashboard");
+    }
   }
 
-  function handleOtpSubmit(e) {
+  async function handleOtpSubmit(e) {
     e.preventDefault();
     setError("");
-    const res = verifyTwoFactor(otp);
+    setLoading(true);
+    const res = await verifyTwoFactor(otp);
+    setLoading(false);
     if (!res.ok) {
       setError(res.error);
       return;

@@ -30,10 +30,10 @@ export default function LectureDetailPage() {
       ? openSession.records.some((r) => r.userId === currentUser.id)
       : false;
 
-  function handleCheckIn(e) {
+  async function handleCheckIn(e) {
     e.preventDefault();
     if (!lecture) return;
-    const res = checkInAttendance(lecture.id, code);
+    const res = await checkInAttendance(lecture.id, code);
     if (!res.ok) {
       setFeedback({ tone: "danger", message: res.message });
       return;
@@ -86,7 +86,13 @@ export default function LectureDetailPage() {
           <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
             <Card className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                <Badge tone={statusToTone(lecture.state)}>{lecture.state}</Badge>
+                {openSession ? (
+                  <Badge tone="danger" dot>Attendance open</Badge>
+                ) : lecture.state ? (
+                  <Badge tone={statusToTone(lecture.state)}>{lecture.state}</Badge>
+                ) : (
+                  <Badge tone="published">Published</Badge>
+                )}
                 <span className="text-xs text-muted tabular-nums">
                   Scheduled {formatDateTime(lecture.scheduledAt)}
                 </span>
@@ -152,8 +158,13 @@ export default function LectureDetailPage() {
               ) : (
                 <form onSubmit={handleCheckIn} className="flex flex-col gap-4">
                   <p className="m-0 text-sm text-fg-2">
-                    Enter the 4-digit attendance code announced during the live lecture. (Sample active code:{" "}
-                    <code className="font-mono font-semibold text-fg">{openSession.code}</code>)
+                    Enter the 4-digit attendance code announced during the live lecture.
+                    {openSession.code ? (
+                      <>
+                        {" "}
+                        (Active code: <code className="font-mono font-semibold text-fg">{openSession.code}</code>)
+                      </>
+                    ) : null}
                   </p>
 
                   {feedback ? (

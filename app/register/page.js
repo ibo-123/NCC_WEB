@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [createdUser, setCreatedUser] = useState(null);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     const nextErrors = {};
@@ -48,16 +48,14 @@ export default function RegisterPage() {
 
     setFieldErrors({});
     setLoading(true);
-    window.setTimeout(() => {
-      const res = register({ name, email, password });
-      setLoading(false);
-      if (!res.ok) {
-        if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        if (res.error) setError(res.error);
-        return;
-      }
-      setCreatedUser(res.user);
-    }, 240);
+    const res = await register({ name, email, password, confirmPassword: confirm });
+    setLoading(false);
+    if (!res.ok) {
+      if (res.fieldErrors) setFieldErrors(res.fieldErrors);
+      if (res.error) setError(res.error);
+      return;
+    }
+    setCreatedUser(res.user);
   }
 
   return (

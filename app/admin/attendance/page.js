@@ -33,6 +33,12 @@ export default function AdminAttendancePage() {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
+    if (!lectureId && store.lectures.length > 0) {
+      setLectureId(store.lectures[1]?.id ?? store.lectures[0]?.id ?? "");
+    }
+  }, [lectureId, store.lectures]);
+
+  useEffect(() => {
     const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
@@ -59,10 +65,10 @@ export default function AdminAttendancePage() {
     return rows;
   }, [store.attendanceSessions, query]);
 
-  function handleStart(e) {
+  async function handleStart(e) {
     e.preventDefault();
     setStartError("");
-    const res = startAttendanceSession(lectureId, Number(validSeconds) || 600);
+    const res = await startAttendanceSession(lectureId, Number(validSeconds) || 600);
     if (!res.ok) {
       setStartError(res.error);
       return;

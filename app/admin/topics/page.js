@@ -37,13 +37,13 @@ export default function AdminTopicsPage() {
     setFormOpen(true);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (form.name.trim().length < 2) {
       setFormError("Topic name must be at least 2 characters.");
       return;
     }
-    const res = saveTopic(form);
+    const res = await saveTopic(form);
     if (!res.ok) {
       setFormError(res.error);
       return;
@@ -169,8 +169,8 @@ export default function AdminTopicsPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (deleteTarget) deleteTopic(deleteTarget.id);
+              onClick={async () => {
+                if (deleteTarget) await deleteTopic(deleteTarget.id);
                 setDeleteTarget(null);
               }}
             >

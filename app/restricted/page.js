@@ -93,8 +93,8 @@ export default function RestrictedPage() {
           </a>
           <Button
             variant="outline"
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await logout();
               router.push("/login");
             }}
           >
@@ -103,9 +103,11 @@ export default function RestrictedPage() {
           </Button>
           <Button
             variant="ghost"
-            onClick={() => {
-              switchRoleQuick("u-marta");
-              router.push("/admin/restricted");
+            onClick={async () => {
+              const res = await switchRoleQuick("u-marta");
+              if (res?.ok) {
+                router.push(res.requiresTwoFactor ? "/login" : "/admin/restricted");
+              }
             }}
           >
             Review as Admin

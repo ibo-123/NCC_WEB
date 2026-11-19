@@ -70,18 +70,22 @@ export default function AdminLecturesPage() {
     }));
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (form.title.trim().length < 3) {
       setFormError("Provide a lecture title (at least 3 characters).");
       return;
     }
     const cleanResources = form.resources.filter((r) => r.title.trim() && r.url.trim());
-    saveLecture({
+    const res = await saveLecture({
       ...form,
       scheduledAt: new Date(form.scheduledAt).toISOString(),
       resources: cleanResources,
     });
+    if (!res?.ok) {
+      setFormError(res?.error ?? "Unable to save lecture.");
+      return;
+    }
     setFormOpen(false);
   }
 
@@ -277,8 +281,8 @@ export default function AdminLecturesPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (deleteTarget) deleteLecture(deleteTarget.id);
+              onClick={async () => {
+                if (deleteTarget) await deleteLecture(deleteTarget.id);
                 setDeleteTarget(null);
               }}
             >

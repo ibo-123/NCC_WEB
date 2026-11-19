@@ -27,15 +27,13 @@ export default function ProblemDetailPage() {
     problem && currentUser ? store.verifications[`${currentUser.id}:${problem.id}`] : null;
   const status = verification?.status ?? "unsolved";
 
-  function runCheck(simulatedOutcome = "auto") {
+  async function runCheck() {
     if (!problem) return;
     setChecking(true);
     setCheckResult(null);
-    window.setTimeout(() => {
-      const res = verifyProblem(problem.id, simulatedOutcome);
-      setChecking(false);
-      setCheckResult(res);
-    }, 350);
+    const res = await verifyProblem(problem.id);
+    setChecking(false);
+    setCheckResult(res);
   }
 
   return (
@@ -171,20 +169,10 @@ export default function ProblemDetailPage() {
               ) : null}
 
               <div className="flex flex-wrap items-center gap-2">
-                <Button onClick={() => runCheck("auto")} loading={checking}>
+                <Button onClick={runCheck} loading={checking}>
                   <RefreshCw aria-hidden="true" size={15} />
                   Run solve check
                 </Button>
-                {problem.platform === "codeforces" && currentUser?.handles?.codeforces ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={checking}
-                    onClick={() => runCheck("failed")}
-                  >
-                    Preview unmatched state
-                  </Button>
-                ) : null}
               </div>
             </Card>
           </div>

@@ -104,9 +104,9 @@ export default function StudentDashboardPage() {
             <Stat
               icon={Flame}
               label="Individual Streak"
-              value="14 days"
-              hint="Best 21d"
-              trend="up"
+              value={`${store.individualStreak?.current ?? 0} days`}
+              hint={`Best ${store.individualStreak?.longest ?? 0}d`}
+              trend={(store.individualStreak?.current ?? 0) > 0 ? "up" : undefined}
               href="/streak"
             />
             <Stat
@@ -286,9 +286,13 @@ export default function StudentDashboardPage() {
                         <div className="truncate text-sm font-semibold text-fg">{lec.title}</div>
                         <div className="mt-0.5 text-xs text-muted">{formatDateTime(lec.scheduledAt)}</div>
                       </div>
-                      <Badge tone={hasOpen ? "danger" : statusToTone(lec.state)} dot={hasOpen}>
-                        {hasOpen ? "Open" : lec.state}
-                      </Badge>
+                      {hasOpen ? (
+                        <Badge tone="danger" dot>
+                          Open
+                        </Badge>
+                      ) : lec.state ? (
+                        <Badge tone={statusToTone(lec.state)}>{lec.state}</Badge>
+                      ) : null}
                     </Link>
                   );
                 })}

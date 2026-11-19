@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Download, Upload } from "lucide-react";
 import { PlatformShell } from "@/components/layout/PlatformShell.js";
 import { PageHeader } from "@/components/layout/AppShell.js";
@@ -14,7 +14,7 @@ import { usePlatform } from "@/components/providers/PlatformProvider.js";
 import { formatDateTime } from "@/lib/status.js";
 
 export default function AdminResultsPage() {
-  const { store, fetchContestResults, publishContestResults } = usePlatform();
+  const { store, fetchContestResults, publishContestResults, loadContestResults } = usePlatform();
   const [selectedId, setSelectedId] = useState(
     () => store.contests.find((c) => c.resultsState !== "published")?.id ?? store.contests[0]?.id ?? "",
   );
@@ -26,15 +26,20 @@ export default function AdminResultsPage() {
   const rows = contest ? (store.contestResults[contest.id] ?? []) : [];
   const teamRows = contest ? (store.teamContestResults[contest.id] ?? []) : [];
 
-  function runFetch(simulateError = false) {
+  const contestId = contest?.id ?? null;
+  useEffect(() => {
+    if (contestId) {
+      loadContestResults(contestId, true);
+    }
+  }, [contestId, loadContestResults]);
+
+  async function runFetch() {
     if (!contest) return;
     setFetchError("");
     setLoading(true);
-    window.setTimeout(() => {
-      const res = fetchContestResults(contest.id, simulateError);
-      setLoading(false);
-      if (!res.ok) setFetchError(res.error);
-    }, 350);
+    const res = await fetchContestResults(contest.id);
+    setLoading(false);
+    if (!res.ok) setFetchError(res.error);
   }
 
   return (
@@ -69,7 +74,7 @@ export default function AdminResultsPage() {
         {contest ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              onClick={() => runFetch(false)}
+              onClick={runFetch}
               loading={loading}
               disabled={contest.resultsState === "published"}
               variant="outline"
@@ -77,11 +82,6 @@ export default function AdminResultsPage() {
               <Download aria-hidden="true" size={15} />
               Fetch standings
             </Button>
-            {contest.resultsState !== "published" ? (
-              <Button size="sm" variant="ghost" disabled={loading} onClick={() => runFetch(true)}>
-                Simulate fetch error
-              </Button>
-            ) : null}
             <Button
               onClick={() => setConfirmPublish(true)}
               disabled={contest.resultsState !== "fetched"}
@@ -182,8 +182,8 @@ export default function AdminResultsPage() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => {
-                    publishContestResults(contest.id);
+                  onClick={async () => {
+                    await publishContestResults(contest.id);
                     setConfirmPublish(false);
                   }}
                 >

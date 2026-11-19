@@ -36,10 +36,10 @@ export default function TeamsPage() {
 
   const isCaptain = Boolean(currentUser && currentTeam && currentTeam.captainId === currentUser.id);
 
-  function handleCreate(e) {
+  async function handleCreate(e) {
     e.preventDefault();
     setCreateError("");
-    const res = createTeam(teamName);
+    const res = await createTeam(teamName);
     if (!res.ok) {
       setCreateError(res.error);
       return;
@@ -47,10 +47,10 @@ export default function TeamsPage() {
     setTeamName("");
   }
 
-  function handleJoin(e) {
+  async function handleJoin(e) {
     e.preventDefault();
     setJoinError("");
-    const res = joinTeam(inviteInput);
+    const res = await joinTeam(inviteInput);
     if (!res.ok) {
       setJoinError(res.error);
       return;
@@ -65,19 +65,19 @@ export default function TeamsPage() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  function executeModalAction() {
+  async function executeModalAction() {
     if (!confirmModal) return;
     if (confirmModal.type === "leave") {
-      const res = leaveTeam();
+      const res = await leaveTeam();
       if (!res.ok) {
         setJoinError(res.error);
       }
     } else if (confirmModal.type === "disband") {
-      disbandTeam(currentTeam?.id);
+      await disbandTeam(currentTeam?.id);
     } else if (confirmModal.type === "remove" && confirmModal.member) {
-      removeTeamMember(confirmModal.member.userId);
+      await removeTeamMember(confirmModal.member.userId);
     } else if (confirmModal.type === "transfer" && confirmModal.member) {
-      transferCaptaincy(confirmModal.member.userId);
+      await transferCaptaincy(confirmModal.member.userId);
     }
     setConfirmModal(null);
   }

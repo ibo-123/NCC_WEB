@@ -14,8 +14,16 @@ export default function HomePage() {
   const router = useRouter();
   const { store, switchRoleQuick } = usePlatform();
 
-  function enterAs(userId, dest) {
-    switchRoleQuick(userId);
+  async function enterAs(userId, dest) {
+    const res = await switchRoleQuick(userId);
+    if (!res?.ok) {
+      router.push("/login");
+      return;
+    }
+    if (res.requiresTwoFactor) {
+      router.push("/login");
+      return;
+    }
     router.push(dest);
   }
 

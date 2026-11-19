@@ -126,8 +126,8 @@ export default function AdminTeamsPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (disbandTarget) disbandTeam(disbandTarget.id);
+              onClick={async () => {
+                if (disbandTarget) await disbandTeam(disbandTarget.id);
                 setDisbandTarget(null);
               }}
             >

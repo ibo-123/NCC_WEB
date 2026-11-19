@@ -104,8 +104,8 @@ export default function AdminRestrictedPage() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                if (reopenTarget) reopenUser(reopenTarget.id);
+              onClick={async () => {
+                if (reopenTarget) await reopenUser(reopenTarget.id);
                 setReopenTarget(null);
               }}
             >

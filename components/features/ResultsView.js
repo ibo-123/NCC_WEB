@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Award } from "lucide-react";
 import { PlatformShell } from "@/components/layout/PlatformShell.js";
 import { PageHeader } from "@/components/layout/AppShell.js";
@@ -22,7 +22,7 @@ const MODE_TABS = [
 const PAGE_SIZE = 10;
 
 export function ResultsView({ initialMode = "individual", contestIdProp = null }) {
-  const { store, currentUser, currentTeam } = usePlatform();
+  const { store, currentUser, currentTeam, loadContestResults } = usePlatform();
 
   const initialContest = contestIdProp
     ? store.contests.find((c) => c.id === contestIdProp)
@@ -47,6 +47,13 @@ export function ResultsView({ initialMode = "individual", contestIdProp = null }
     publishedContestsForMode.find((c) => c.id === selectedContestId) ??
     publishedContestsForMode[0] ??
     null;
+
+  const activeContestId = activeContest?.id ?? null;
+  useEffect(() => {
+    if (activeContestId) {
+      loadContestResults(activeContestId);
+    }
+  }, [activeContestId, loadContestResults]);
 
   const individualRows = useMemo(
     () => (activeContest ? (store.contestResults[activeContest.id] ?? []) : []),

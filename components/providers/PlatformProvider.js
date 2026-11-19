@@ -1,72 +1,432 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { createInitialStore } from "@/lib/mock/seedData.js";
 import { ToastViewport } from "@/components/ui/Toast.js";
+import { formatShortDate } from "@/lib/status.js";
 
-const STORAGE_KEY = "ncc-dsa-frontend-store-v1";
 const PlatformContext = createContext(null);
 
-function makeId(prefix) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+function makeToastId() {
+  return `toast-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function slugify(name) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "item";
+function createEmptyStore() {
+  return {
+    currentUserId: null,
+    pending2faUserId: null,
+    registrationOpen: true,
+    admin2faEnabled: false,
+    restrictedContactEmail: "dsa-heads@ncc.edu",
+    users: [],
+    teams: [],
+    announcements: [],
+    lectures: [],
+    attendanceSessions: [],
+    topics: [],
+    problems: [],
+    verifications: {},
+    studentProgressSummaries: {},
+    contests: [],
+    contestResults: {},
+    teamContestResults: {},
+    ratingHistory: {},
+    notifications: [],
+    auditLogs: [],
+    recentActivity: [],
+    heatmapIndividual: [],
+    heatmapTeam: [],
+    individualStreak: { current: 0, longest: 0, activeDays: 0 },
+  };
 }
 
-function randomCode(len, alphabet) {
-  let out = "";
-  for (let i = 0; i < len; i += 1) {
-    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+const DEMO_ACCOUNTS = {
+  "u-ibrahim": {
+    email: "ibrahim.kedir@ncc.edu",
+    password: "studentpass123",
+  },
+  "u-marta": {
+    email: "marta.alemu@ncc.edu",
+    password: "adminpass123",
+  },
+  "u-liya": {
+    email: "liya.mekonnen@ncc.edu",
+    password: "studentpass123",
+  },
+};
+
+function formatActivityTitle(type) {
+  switch (type) {
+    case "problem_solved":
+      return "Problem solved";
+    case "attendance":
+      return "Attendance recorded";
+    case "contest_result":
+      return "Contest result";
+    case "team_contest_result":
+      return "Team contest result";
+    default:
+      return "Activity";
   }
-  return out;
+}
+
+async function apiFetch(url, options = {}) {
+  const headers = { ...(options.headers ?? {}) };
+  if (options.body !== undefined && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  let res;
+  try {
+    res = await fetch(url, {
+      ...options,
+      credentials: "same-origin",
+      headers,
+    });
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      error: { code: "NETWORK_ERROR", message: "Unable to reach server. Please try again." },
+    };
+  }
+
+  let payload = null;
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!res.ok || !payload?.success) {
+    return {
+      ok: false,
+      status: res.status,
+      error: payload?.error ?? {
+        code: "REQUEST_FAILED",
+        message: `Request failed (${res.status})`,
+      },
+    };
+  }
+
+  return { ok: true, status: res.status, data: payload.data };
+}
+
+function normalizeContest(c) {
+  return {
+    ...c,
+    publication: c.publication ?? "published",
+    resultsState: c.resultsState ?? (c.resultsPublished ? "published" : "not_fetched"),
+    fetchSummary: c.fetchSummary ?? null,
+    platformContestId: c.platformContestId ?? "",
+  };
+}
+
+function normalizeRatingItems(items) {
+  return (items ?? []).map((pt) => ({
+    ...pt,
+    label: pt.label ?? formatShortDate(pt.computedAt),
+  }));
 }
 
 export function PlatformProvider({ children }) {
-  const [store, setStore] = useState(() => createInitialStore());
+  const [store, setStore] = useState(() => createEmptyStore());
   const [hydrated, setHydrated] = useState(false);
   const [toasts, setToasts] = useState([]);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.users)) {
-          setStore(parsed);
-        }
-      }
-    } catch {
-      // Ignore corrupt storage and use fresh seed data.
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-    } catch {
-      // Storage quota errors do not block UI state.
-    }
-  }, [store, hydrated]);
 
   const dismissToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const pushToast = useCallback((tone, title, body) => {
-    const id = makeId("toast");
+    const id = makeToastId();
     setToasts((prev) => [...prev, { id, tone, title, body }]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4500);
+    }
   }, []);
+
+  const hydrate = useCallback(async () => {
+    const meRes = await apiFetch("/api/auth/me");
+    if (!meRes.ok) {
+      setStore(createEmptyStore());
+      setHydrated(true);
+      return null;
+    }
+
+    const { user, admin2faEnabled, registrationOpen, restrictedContactEmail } = meRes.data;
+
+    if (user.status === "restricted") {
+      setStore({
+        ...createEmptyStore(),
+        currentUserId: user.id,
+        registrationOpen: Boolean(registrationOpen),
+        admin2faEnabled: Boolean(admin2faEnabled),
+        restrictedContactEmail: restrictedContactEmail ?? "dsa-heads@ncc.edu",
+        users: [user],
+      });
+      setHydrated(true);
+      return user;
+    }
+
+    if (user.role === "admin") {
+      const [
+        dashRes,
+        usersRes,
+        teamsRes,
+        annRes,
+        lecRes,
+        attRes,
+        conRes,
+        topRes,
+        probRes,
+        progRes,
+        ratingRes,
+        auditRes,
+      ] = await Promise.all([
+        apiFetch("/api/admin/dashboard"),
+        apiFetch("/api/admin/users?limit=100"),
+        apiFetch("/api/admin/teams?limit=100"),
+        apiFetch("/api/admin/announcements?limit=100"),
+        apiFetch("/api/admin/lectures?limit=100"),
+        apiFetch("/api/admin/attendance?limit=100"),
+        apiFetch("/api/admin/contests?limit=100"),
+        apiFetch("/api/admin/topics?limit=100"),
+        apiFetch("/api/admin/problems?limit=100"),
+        apiFetch("/api/admin/progress?limit=100"),
+        apiFetch("/api/admin/rating?limit=100"),
+        apiFetch("/api/admin/audit-log?limit=100"),
+      ]);
+
+      const rawSessions = attRes.ok ? (attRes.data.items ?? []) : [];
+      const sessionsToFetch = rawSessions.filter((s, idx) => !s.closedAt || idx < 15);
+      const detailResults = await Promise.all(
+        sessionsToFetch.map((s) => apiFetch(`/api/admin/attendance/${s.id}?limit=100`)),
+      );
+      const detailById = new Map();
+      sessionsToFetch.forEach((s, idx) => {
+        if (detailResults[idx]?.ok) {
+          detailById.set(s.id, detailResults[idx].data);
+        }
+      });
+
+      const attendanceSessions = rawSessions.map((s) => {
+        const detail = detailById.get(s.id);
+        return {
+          ...s,
+          code: detail?.session?.code ?? s.code ?? null,
+          records: detail?.records?.items ?? [],
+        };
+      });
+
+      const ratingHistory = {};
+      for (const r of ratingRes.ok ? (ratingRes.data.items ?? []) : []) {
+        if (r.rating !== null && r.rating !== undefined) {
+          ratingHistory[r.userId] = [
+            {
+              id: `latest-${r.userId}`,
+              value: r.rating,
+              previous: r.previous ?? null,
+              change: r.change ?? null,
+              source: "term",
+              computedAt: r.computedAt,
+              label: formatShortDate(r.computedAt),
+            },
+          ];
+        }
+      }
+
+      const studentProgressSummaries = {};
+      for (const p of progRes.ok ? (progRes.data.items ?? []) : []) {
+        studentProgressSummaries[p.userId] = p;
+      }
+
+      const rawUsers = usersRes.ok ? (usersRes.data.items ?? []) : [user];
+      const users = rawUsers.some((u) => u.id === user.id) ? rawUsers : [user, ...rawUsers];
+
+      const contests = (conRes.ok ? (conRes.data.items ?? []) : []).map(normalizeContest);
+
+      setStore({
+        ...createEmptyStore(),
+        currentUserId: user.id,
+        registrationOpen: Boolean(registrationOpen),
+        admin2faEnabled: Boolean(admin2faEnabled),
+        restrictedContactEmail: restrictedContactEmail ?? "dsa-heads@ncc.edu",
+        users,
+        teams: teamsRes.ok ? (teamsRes.data.items ?? []) : [],
+        announcements: annRes.ok ? (annRes.data.items ?? []) : [],
+        lectures: lecRes.ok ? (lecRes.data.items ?? []) : [],
+        attendanceSessions,
+        topics: topRes.ok ? (topRes.data.items ?? []) : [],
+        problems: probRes.ok ? (probRes.data.items ?? []) : [],
+        studentProgressSummaries,
+        contests,
+        ratingHistory,
+        auditLogs: auditRes.ok
+          ? (auditRes.data.items ?? [])
+          : dashRes.ok
+            ? (dashRes.data.recentActivity ?? [])
+            : [],
+      });
+      setHydrated(true);
+      return user;
+    }
+
+    // Active student hydration
+    const [
+      dashRes,
+      progressRes,
+      annRes,
+      lecRes,
+      attRes,
+      conRes,
+      teamRes,
+      ratingHistRes,
+      notifRes,
+      streakRes,
+    ] = await Promise.all([
+      apiFetch("/api/dashboard"),
+      apiFetch("/api/progress/me"),
+      apiFetch("/api/announcements?limit=100"),
+      apiFetch("/api/lectures?limit=100"),
+      apiFetch("/api/attendance/me?limit=100"),
+      apiFetch("/api/contests?limit=100"),
+      apiFetch("/api/teams/me"),
+      apiFetch("/api/rating/me/history?limit=100"),
+      apiFetch("/api/notifications?limit=100"),
+      apiFetch("/api/streak/me"),
+    ]);
+
+    const topics = progressRes.ok ? (progressRes.data.topics ?? []) : [];
+    const topicProblemRes = await Promise.all(
+      topics.map((t) => apiFetch(`/api/progress/topics/${t.id}/problems?limit=100`)),
+    );
+
+    const problems = [];
+    const verifications = {};
+    topicProblemRes.forEach((res) => {
+      if (!res.ok) return;
+      for (const p of res.data.items ?? []) {
+        problems.push({ ...p, status: "published" });
+        verifications[`${user.id}:${p.id}`] = {
+          status: p.status ?? "unsolved",
+          solvedAt: p.solvedAt ?? null,
+          lastCheckedAt: p.lastCheckedAt ?? null,
+        };
+      }
+    });
+
+    const announcements = (annRes.ok ? (annRes.data.items ?? []) : []).map((a) => ({
+      ...a,
+      status: "published",
+      createdBy: a.createdBy ?? "NCC Coordinator",
+    }));
+
+    const lectures = (lecRes.ok ? (lecRes.data.items ?? []) : []).map((l) => ({
+      ...l,
+      status: "published",
+    }));
+
+    const contests = (conRes.ok ? (conRes.data.items ?? []) : []).map(normalizeContest);
+
+    // Build student attendance sessions from live lectures + history
+    const attHistoryItems = attRes.ok ? (attRes.data.history?.items ?? []) : [];
+    const attendedCount = attRes.ok ? (attRes.data.summary?.attended ?? 0) : 0;
+    const attendanceSessions = [];
+
+    for (const lec of lectures) {
+      if (lec.attendance?.sessionOpen) {
+        attendanceSessions.push({
+          id: `open-${lec.id}`,
+          lectureId: lec.id,
+          lectureTitle: lec.title,
+          opensAt: lec.scheduledAt,
+          closedAt: null,
+          code: null,
+          records: lec.attendance.checkedIn
+            ? [{ userId: user.id, name: user.name, submittedAt: lec.scheduledAt }]
+            : [],
+        });
+      }
+    }
+
+    for (const h of attHistoryItems) {
+      const hasOpenForLecture = attendanceSessions.some((s) => s.lectureId === h.lectureId);
+      if (hasOpenForLecture) continue;
+      attendanceSessions.push({
+        id: `hist-${h.lectureId}-${h.submittedAt}`,
+        lectureId: h.lectureId,
+        lectureTitle: h.title,
+        opensAt: h.submittedAt,
+        closedAt: h.submittedAt,
+        code: null,
+        records: [{ userId: user.id, name: user.name, submittedAt: h.submittedAt }],
+      });
+    }
+
+    // Prefetch published results for recent published contests so ResultsView renders immediately
+    const publishedResultContests = contests.filter((c) => c.resultsState === "published").slice(0, 5);
+    const resultFetches = await Promise.all(
+      publishedResultContests.map((c) => apiFetch(`/api/contests/${c.id}/results?limit=100`)),
+    );
+    const contestResults = {};
+    const teamContestResults = {};
+    publishedResultContests.forEach((c, idx) => {
+      const r = resultFetches[idx];
+      if (!r?.ok) return;
+      if (c.mode === "team") {
+        contestResults[c.id] = r.data.members ?? [];
+        teamContestResults[c.id] = r.data.teams ?? [];
+      } else {
+        contestResults[c.id] = r.data.items ?? [];
+      }
+    });
+
+    const recentActivity = (dashRes.ok ? (dashRes.data.recentActivity ?? []) : []).map((ev) => ({
+      id: ev.id,
+      title: formatActivityTitle(ev.type),
+      detail: ev.day,
+      date: formatShortDate(ev.occurredAt),
+    }));
+
+    const studentUser = { ...user, attendedCount };
+    const team = teamRes.ok ? teamRes.data : null;
+    const streakData = streakRes.ok ? streakRes.data : dashRes.ok ? dashRes.data.streak : null;
+
+    setStore({
+      ...createEmptyStore(),
+      currentUserId: user.id,
+      registrationOpen: Boolean(registrationOpen),
+      admin2faEnabled: Boolean(admin2faEnabled),
+      restrictedContactEmail: restrictedContactEmail ?? "dsa-heads@ncc.edu",
+      users: [studentUser],
+      teams: team ? [team] : [],
+      announcements,
+      lectures,
+      attendanceSessions,
+      topics,
+      problems,
+      verifications,
+      contests,
+      contestResults,
+      teamContestResults,
+      ratingHistory: {
+        [user.id]: normalizeRatingItems(ratingHistRes.ok ? ratingHistRes.data.items : []),
+      },
+      notifications: notifRes.ok ? (notifRes.data.items ?? []) : [],
+      recentActivity,
+      heatmapIndividual: streakData?.individual?.cells ?? [],
+      heatmapTeam: streakData?.team?.cells ?? [],
+      individualStreak: streakData?.individual ?? { current: 0, longest: 0, activeDays: 0 },
+    });
+    setHydrated(true);
+    return studentUser;
+  }, []);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   const currentUser = useMemo(
     () => store.users.find((u) => u.id === store.currentUserId) ?? null,
@@ -82,760 +442,722 @@ export function PlatformProvider({ children }) {
     );
   }, [store.teams, currentUser]);
 
-  const resetDemoData = useCallback(() => {
-    const fresh = createInitialStore();
-    setStore(fresh);
-    pushToast("info", "Demo workspace reset", "Sample records restored to initial state.");
-  }, [pushToast]);
+  const resetDemoData = useCallback(async () => {
+    await hydrate();
+    pushToast("info", "Workspace synced", "Latest records loaded from the database.");
+  }, [hydrate, pushToast]);
 
-  // ---- Auth Actions ----
-  const login = useCallback((email, password) => {
-    const normalized = String(email ?? "").trim().toLowerCase();
-    const user = store.users.find((u) => u.email.toLowerCase() === normalized);
-    if (!user || !password || password.length < 4) {
-      return { ok: false, error: "Invalid email or password." };
-    }
-    if (user.role === "admin" && store.admin2faEnabled && user.twoFactorEnabled) {
-      setStore((prev) => ({ ...prev, pending2faUserId: user.id }));
-      return { ok: true, requiresTwoFactor: true, user };
-    }
+  // ---- Lazy detail loaders ----
+  const loadContestResults = useCallback(async (contestId, isAdmin = false) => {
+    if (!contestId) return;
+    const url = isAdmin
+      ? `/api/admin/contests/${contestId}/results?limit=100`
+      : `/api/contests/${contestId}/results?limit=100`;
+    const res = await apiFetch(url);
+    if (!res.ok) return;
     setStore((prev) => ({
       ...prev,
-      currentUserId: user.id,
-      pending2faUserId: null,
-      users: prev.users.map((u) =>
-        u.id === user.id ? { ...u, lastLoginAt: new Date().toISOString() } : u,
-      ),
+      contestResults: {
+        ...prev.contestResults,
+        [contestId]: res.data.members ?? res.data.items ?? [],
+      },
+      ...(res.data.teams
+        ? {
+            teamContestResults: {
+              ...prev.teamContestResults,
+              [contestId]: res.data.teams,
+            },
+          }
+        : {}),
     }));
-    return { ok: true, requiresTwoFactor: false, user };
-  }, [store.users, store.admin2faEnabled]);
-
-  const verifyTwoFactor = useCallback((code) => {
-    if (!/^\d{6}$/.test(String(code ?? ""))) {
-      return { ok: false, error: "Enter the 6-digit verification code." };
-    }
-    const targetId = store.pending2faUserId ?? store.currentUserId;
-    if (!targetId) return { ok: false, error: "No pending sign-in session." };
-    setStore((prev) => ({
-      ...prev,
-      currentUserId: targetId,
-      pending2faUserId: null,
-    }));
-    return { ok: true };
-  }, [store.pending2faUserId, store.currentUserId]);
-
-  const register = useCallback(({ name, email }) => {
-    const normalized = String(email ?? "").trim().toLowerCase();
-    if (!store.registrationOpen) {
-      return { ok: false, error: "Registration is currently closed by platform policy." };
-    }
-    if (store.users.some((u) => u.email.toLowerCase() === normalized)) {
-      return { ok: false, fieldErrors: { email: "An account with this email already exists." } };
-    }
-    const newUser = {
-      id: makeId("u"),
-      name: name.trim(),
-      email: normalized,
-      role: "student",
-      status: "active",
-      rating: null,
-      handles: { codeforces: null, leetcode: null },
-      restrictedAt: null,
-      restrictedReason: null,
-      lastLoginAt: null,
-      createdAt: new Date().toISOString(),
-      attendedCount: 0,
-      twoFactorEnabled: false,
-    };
-    setStore((prev) => ({ ...prev, users: [...prev.users, newUser] }));
-    return { ok: true, user: newUser };
-  }, [store.registrationOpen, store.users]);
-
-  const logout = useCallback(() => {
-    setStore((prev) => ({ ...prev, currentUserId: null, pending2faUserId: null }));
   }, []);
 
-  const switchRoleQuick = useCallback((userId) => {
-    const user = store.users.find((u) => u.id === userId);
-    if (!user) return;
-    setStore((prev) => ({ ...prev, currentUserId: user.id, pending2faUserId: null }));
-  }, [store.users]);
+  const loadStudentProgress = useCallback(async (userId) => {
+    if (!userId) return;
+    const res = await apiFetch(`/api/admin/progress/${userId}?limit=100`);
+    if (!res.ok) return;
+    setStore((prev) => {
+      const nextVerifs = { ...prev.verifications };
+      for (const p of res.data.items ?? []) {
+        nextVerifs[`${userId}:${p.id}`] = {
+          status: p.status ?? "unsolved",
+          solvedAt: p.solvedAt ?? null,
+          lastCheckedAt: p.lastCheckedAt ?? null,
+        };
+      }
+      return { ...prev, verifications: nextVerifs };
+    });
+  }, []);
 
-  const updateHandles = useCallback(({ codeforces, leetcode }) => {
-    if (!currentUser) return { ok: false, error: "Sign in required." };
-    const cf = String(codeforces ?? "").trim() || null;
-    const lc = String(leetcode ?? "").trim() || null;
-    const fieldErrors = {};
-    if (cf && store.users.some((u) => u.id !== currentUser.id && u.handles.codeforces?.toLowerCase() === cf.toLowerCase())) {
-      fieldErrors.codeforces = "This Codeforces handle is already linked to another account.";
-    }
-    if (lc && store.users.some((u) => u.id !== currentUser.id && u.handles.leetcode?.toLowerCase() === lc.toLowerCase())) {
-      fieldErrors.leetcode = "This LeetCode handle is already linked to another account.";
-    }
-    if (Object.keys(fieldErrors).length) return { ok: false, fieldErrors };
-
-    setStore((prev) => ({
-      ...prev,
-      users: prev.users.map((u) =>
-        u.id === currentUser.id ? { ...u, handles: { codeforces: cf, leetcode: lc } } : u,
-      ),
-      teams: prev.teams.map((t) => ({
-        ...t,
-        members: t.members.map((m) =>
-          m.userId === currentUser.id ? { ...m, handles: { codeforces: cf } } : m,
-        ),
-      })),
-    }));
-    pushToast("ok", "Linked handles updated", "Changes saved to your profile.");
-    return { ok: true };
-  }, [currentUser, store.users, pushToast]);
-
-  // ---- Student Actions ----
-  const checkInAttendance = useCallback((lectureId, code) => {
-    if (!currentUser) return { ok: false, code: "UNAUTHENTICATED", message: "Sign in required." };
-    const session = store.attendanceSessions.find((s) => s.lectureId === lectureId && !s.closedAt);
-    if (!session) {
-      return { ok: false, code: "ATTENDANCE_NOT_ACTIVE", message: "There is no open attendance session for this lecture." };
-    }
-    if (new Date(session.expiresAt).getTime() <= Date.now()) {
-      setStore((prev) => ({
-        ...prev,
-        attendanceSessions: prev.attendanceSessions.map((s) =>
-          s.id === session.id ? { ...s, closedAt: new Date().toISOString(), code: null } : s,
-        ),
-      }));
-      return { ok: false, code: "ATTENDANCE_EXPIRED", message: "The attendance session has expired." };
-    }
-    if (session.records.some((r) => r.userId === currentUser.id)) {
-      return { ok: false, code: "ATTENDANCE_DUPLICATE", message: "You have already submitted attendance for this session." };
-    }
-    if (String(code ?? "").trim() !== session.code) {
-      return { ok: false, code: "ATTENDANCE_INVALID_CODE", message: "Invalid attendance code. Check the 4-digit code and try again." };
-    }
-
-    const nowIso = new Date().toISOString();
-    setStore((prev) => ({
-      ...prev,
-      attendanceSessions: prev.attendanceSessions.map((s) =>
-        s.id === session.id
-          ? {
-              ...s,
-              records: [...s.records, { userId: currentUser.id, name: currentUser.name, submittedAt: nowIso }],
-            }
-          : s,
-      ),
-      users: prev.users.map((u) =>
-        u.id === currentUser.id ? { ...u, attendedCount: (u.attendedCount ?? 0) + 1 } : u,
-      ),
-      notifications: [
-        {
-          id: makeId("notif"),
-          userId: currentUser.id,
-          type: "attendance_recorded",
-          title: "Attendance recorded",
-          body: `Attendance recorded for ${session.lectureTitle}.`,
-          href: "/attendance",
-          createdAt: nowIso,
-        },
-        ...prev.notifications,
-      ],
-    }));
-    pushToast("ok", "Attendance recorded", session.lectureTitle);
-    return { ok: true, submittedAt: nowIso };
-  }, [currentUser, store.attendanceSessions, pushToast]);
-
-  const verifyProblem = useCallback((problemId, simulatedOutcome = "auto") => {
-    if (!currentUser) return { result: "unlinked" };
-    const problem = store.problems.find((p) => p.id === problemId);
-    if (!problem) return { result: "failed" };
-
-    const nowIso = new Date().toISOString();
-    if (problem.platform === "leetcode" && simulatedOutcome === "auto") {
-      setStore((prev) => ({
-        ...prev,
-        verifications: {
-          ...prev.verifications,
-          [`${currentUser.id}:${problemId}`]: {
-            status: "failed",
-            solvedAt: null,
-            lastCheckedAt: nowIso,
-          },
-        },
-      }));
+  // ---- Auth Actions ----
+  const login = useCallback(
+    async (email, password) => {
+      const res = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: res.error.message,
+          fieldErrors: res.error.fields,
+        };
+      }
+      if (res.data.requiresTwoFactor) {
+        setStore((prev) => ({
+          ...prev,
+          pending2faUserId: res.data.user.id,
+        }));
+        return { ok: true, requiresTwoFactor: true, user: res.data.user };
+      }
+      const hydratedUser = await hydrate();
       return {
-        result: "unavailable",
-        message: "LeetCode provisional solve checks are unavailable in v1; no progress awarded.",
+        ok: true,
+        requiresTwoFactor: false,
+        user: hydratedUser ?? res.data.user,
       };
-    }
-
-    if (!currentUser.handles.codeforces && problem.platform === "codeforces") {
-      return { result: "unlinked", message: "Link your Codeforces handle on your profile before running a solve check." };
-    }
-
-    const outcome = simulatedOutcome === "auto" ? "solved" : simulatedOutcome;
-    setStore((prev) => ({
-      ...prev,
-      verifications: {
-        ...prev.verifications,
-        [`${currentUser.id}:${problemId}`]: {
-          status: outcome === "solved" ? "solved" : "failed",
-          solvedAt: outcome === "solved" ? nowIso : null,
-          lastCheckedAt: nowIso,
-        },
-      },
-    }));
-    if (outcome === "solved") {
-      pushToast("ok", "Provisional solve check passed", `${problem.title} marked solved.`);
-    }
-    return { result: outcome, solvedAt: outcome === "solved" ? nowIso : null };
-  }, [currentUser, store.problems, pushToast]);
-
-  // ---- Team Actions ----
-  const createTeam = useCallback((name) => {
-    if (!currentUser) return { ok: false, error: "Sign in required." };
-    if (currentTeam) return { ok: false, error: "Leave your current team before creating a new one." };
-    const trimmed = String(name ?? "").trim();
-    if (trimmed.length < 2) return { ok: false, error: "Team name must be at least 2 characters." };
-    const slug = slugify(trimmed);
-    if (store.teams.some((t) => t.status === "active" && t.slug === slug)) {
-      return { ok: false, error: "An active team with a similar name already exists." };
-    }
-    const team = {
-      id: makeId("team"),
-      name: trimmed,
-      slug,
-      inviteCode: randomCode(8, "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"),
-      captainId: currentUser.id,
-      status: "active",
-      maxMembers: 5,
-      streak: { current: 0, longest: 0 },
-      members: [
-        {
-          userId: currentUser.id,
-          name: currentUser.name,
-          role: "captain",
-          handles: { codeforces: currentUser.handles.codeforces },
-          joinedAt: new Date().toISOString(),
-        },
-      ],
-    };
-    setStore((prev) => ({ ...prev, teams: [team, ...prev.teams] }));
-    pushToast("ok", "Team created", `Invite code: ${team.inviteCode}`);
-    return { ok: true, team };
-  }, [currentUser, currentTeam, store.teams, pushToast]);
-
-  const joinTeam = useCallback((inviteCode) => {
-    if (!currentUser) return { ok: false, error: "Sign in required." };
-    if (currentTeam) return { ok: false, error: "You are already on an active team." };
-    const normalized = String(inviteCode ?? "").trim().toUpperCase();
-    const team = store.teams.find((t) => t.status === "active" && t.inviteCode === normalized);
-    if (!team) return { ok: false, error: "No active team found for that invite code." };
-    if (team.members.length >= (team.maxMembers ?? 5)) {
-      return { ok: false, error: "This team has reached the maximum member limit." };
-    }
-    setStore((prev) => ({
-      ...prev,
-      teams: prev.teams.map((t) =>
-        t.id === team.id
-          ? {
-              ...t,
-              members: [
-                ...t.members,
-                {
-                  userId: currentUser.id,
-                  name: currentUser.name,
-                  role: "member",
-                  handles: { codeforces: currentUser.handles.codeforces },
-                  joinedAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : t,
-      ),
-    }));
-    pushToast("ok", "Joined team", `Welcome to ${team.name}.`);
-    return { ok: true, team };
-  }, [currentUser, currentTeam, store.teams, pushToast]);
-
-  const leaveTeam = useCallback(() => {
-    if (!currentUser || !currentTeam) return { ok: false, error: "No active team." };
-    if (currentTeam.captainId === currentUser.id && currentTeam.members.length > 1) {
-      return { ok: false, error: "Transfer captaincy or disband the team before leaving." };
-    }
-    setStore((prev) => ({
-      ...prev,
-      teams: prev.teams.map((t) => {
-        if (t.id !== currentTeam.id) return t;
-        const remaining = t.members.filter((m) => m.userId !== currentUser.id);
-        return remaining.length === 0
-          ? { ...t, members: [], status: "disbanded" }
-          : { ...t, members: remaining };
-      }),
-    }));
-    pushToast("info", "Left team", `You left ${currentTeam.name}.`);
-    return { ok: true };
-  }, [currentUser, currentTeam, pushToast]);
-
-  const removeTeamMember = useCallback((userId) => {
-    if (!currentUser || !currentTeam || currentTeam.captainId !== currentUser.id) {
-      return { ok: false, error: "Only the team captain can remove members." };
-    }
-    if (userId === currentUser.id) return { ok: false, error: "Cannot remove yourself." };
-    setStore((prev) => ({
-      ...prev,
-      teams: prev.teams.map((t) =>
-        t.id === currentTeam.id
-          ? { ...t, members: t.members.filter((m) => m.userId !== userId) }
-          : t,
-      ),
-    }));
-    pushToast("info", "Member removed");
-    return { ok: true };
-  }, [currentUser, currentTeam, pushToast]);
-
-  const transferCaptaincy = useCallback((userId) => {
-    if (!currentUser || !currentTeam || currentTeam.captainId !== currentUser.id) {
-      return { ok: false, error: "Only the team captain can transfer captaincy." };
-    }
-    if (!currentTeam.members.some((m) => m.userId === userId)) {
-      return { ok: false, error: "Selected user is not an active team member." };
-    }
-    setStore((prev) => ({
-      ...prev,
-      teams: prev.teams.map((t) =>
-        t.id === currentTeam.id
-          ? {
-              ...t,
-              captainId: userId,
-              members: t.members.map((m) => ({
-                ...m,
-                role: m.userId === userId ? "captain" : "member",
-              })),
-            }
-          : t,
-      ),
-    }));
-    pushToast("ok", "Captaincy transferred");
-    return { ok: true };
-  }, [currentUser, currentTeam, pushToast]);
-
-  const disbandTeam = useCallback((teamId) => {
-    const id = teamId ?? currentTeam?.id;
-    if (!id) return { ok: false, error: "Team not found." };
-    const target = store.teams.find((t) => t.id === id);
-    setStore((prev) => ({
-      ...prev,
-      teams: prev.teams.map((t) =>
-        t.id === id ? { ...t, status: "disbanded", members: [] } : t,
-      ),
-      auditLogs: currentUser?.role === "admin"
-        ? [
-            {
-              id: makeId("aud"),
-              action: "team.disband",
-              entityType: "Team",
-              entityId: id,
-              summary: `Disbanded team ${target?.name ?? id}`,
-              actor: { id: currentUser.id, name: currentUser.name },
-              createdAt: new Date().toISOString(),
-              correlationId: makeId("corr"),
-            },
-            ...prev.auditLogs,
-          ]
-        : prev.auditLogs,
-    }));
-    pushToast("info", "Team disbanded", target?.name);
-    return { ok: true };
-  }, [currentTeam, currentUser, store.teams, pushToast]);
-
-  // ---- Admin Actions ----
-  const appendAudit = useCallback(
-    (prev, action, entityType, entityId, summary) => [
-      {
-        id: makeId("aud"),
-        action,
-        entityType,
-        entityId,
-        summary,
-        actor: currentUser ? { id: currentUser.id, name: currentUser.name } : { id: "u-marta", name: "Marta Alemu" },
-        createdAt: new Date().toISOString(),
-        correlationId: makeId("corr"),
-      },
-      ...prev.auditLogs,
-    ],
-    [currentUser],
+    },
+    [hydrate],
   );
 
-  const reopenUser = useCallback((userId) => {
-    const user = store.users.find((u) => u.id === userId);
-    if (!user) return;
-    setStore((prev) => ({
-      ...prev,
-      users: prev.users.map((u) =>
-        u.id === userId ? { ...u, status: "active", restrictedAt: null, restrictedReason: null } : u,
-      ),
-      auditLogs: appendAudit(prev, "user.reopen", "User", userId, `Reopened account ${user.name}`),
-    }));
-    pushToast("ok", "Account access restored", `${user.name} can now access the full platform.`);
-  }, [store.users, appendAudit, pushToast]);
+  const verifyTwoFactor = useCallback(
+    async (code) => {
+      const res = await apiFetch("/api/auth/2fa/verify", {
+        method: "POST",
+        body: JSON.stringify({ code: String(code ?? "").trim() }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      return { ok: true };
+    },
+    [hydrate],
+  );
 
-  const saveAnnouncement = useCallback((payload) => {
-    const nowIso = new Date().toISOString();
-    const isEdit = Boolean(payload.id);
-    const id = payload.id ?? makeId("ann");
-    const status = payload.status === "published" ? "published" : "draft";
-    setStore((prev) => {
-      const nextItem = {
-        id,
-        title: payload.title.trim(),
-        body: payload.body.trim(),
-        type: payload.type,
-        status,
-        publishedAt: status === "published" ? nowIso : null,
-        createdAt: isEdit ? (prev.announcements.find((a) => a.id === id)?.createdAt ?? nowIso) : nowIso,
-        updatedAt: nowIso,
-        createdBy: currentUser?.name ?? "Marta Alemu",
-        relatedHref: null,
-      };
-      const announcements = isEdit
-        ? prev.announcements.map((a) => (a.id === id ? { ...a, ...nextItem } : a))
-        : [nextItem, ...prev.announcements];
-      return {
-        ...prev,
-        announcements,
-        auditLogs: appendAudit(
-          prev,
-          status === "published" ? "announcement.publish" : "announcement.manage",
-          "Announcement",
-          id,
-          `${status === "published" ? "Published" : "Saved"} announcement ${nextItem.title}`,
-        ),
-      };
+  const register = useCallback(async ({ name, email, password, confirmPassword }) => {
+    const res = await apiFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        confirmPassword: confirmPassword ?? password,
+      }),
     });
-    pushToast("ok", status === "published" ? "Announcement published successfully" : "Announcement draft saved");
-  }, [appendAudit, currentUser?.name, pushToast]);
+    if (!res.ok) {
+      if (res.status === 403) {
+        setStore((prev) => ({ ...prev, registrationOpen: false }));
+      }
+      return {
+        ok: false,
+        error: res.error.message,
+        fieldErrors: res.error.fields,
+      };
+    }
+    return { ok: true, user: res.data.user };
+  }, []);
 
-  const publishAnnouncement = useCallback((id) => {
-    const item = store.announcements.find((a) => a.id === id);
-    if (!item) return;
-    const nowIso = new Date().toISOString();
-    setStore((prev) => ({
-      ...prev,
-      announcements: prev.announcements.map((a) =>
-        a.id === id ? { ...a, status: "published", publishedAt: nowIso, updatedAt: nowIso } : a,
-      ),
-      auditLogs: appendAudit(prev, "announcement.publish", "Announcement", id, `Published announcement ${item.title}`),
-    }));
-    pushToast("ok", "Announcement published successfully");
-  }, [store.announcements, appendAudit, pushToast]);
+  const logout = useCallback(async () => {
+    await apiFetch("/api/auth/logout", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    setStore(createEmptyStore());
+    setHydrated(true);
+  }, []);
 
-  const deleteAnnouncement = useCallback((id) => {
-    const item = store.announcements.find((a) => a.id === id);
-    setStore((prev) => ({
-      ...prev,
-      announcements: prev.announcements.filter((a) => a.id !== id),
-      auditLogs: appendAudit(prev, "announcement.delete", "Announcement", id, `Deleted announcement ${item?.title ?? id}`),
-    }));
-    pushToast("ok", "Announcement deleted");
-  }, [store.announcements, appendAudit, pushToast]);
+  const switchRoleQuick = useCallback(
+    async (userId) => {
+      const creds = DEMO_ACCOUNTS[userId];
+      if (!creds) return { ok: false, error: "Account preset not found." };
+      const res = await login(creds.email, creds.password);
+      if (!res.ok) {
+        pushToast("bad", "Sign-in failed", res.error);
+      }
+      return res;
+    },
+    [login, pushToast],
+  );
 
-  const saveLecture = useCallback((payload) => {
-    const id = payload.id ?? makeId("lec");
-    const isEdit = Boolean(payload.id);
-    const status = payload.status === "published" ? "published" : "draft";
-    setStore((prev) => {
-      const nextLecture = {
-        id,
-        title: payload.title.trim(),
-        description: payload.description.trim(),
+  const updateHandles = useCallback(
+    async ({ codeforces, leetcode }) => {
+      const res = await apiFetch("/api/users/me/handles", {
+        method: "PUT",
+        body: JSON.stringify({ codeforces, leetcode }),
+      });
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: res.error.message,
+          fieldErrors: res.error.fields,
+        };
+      }
+      await hydrate();
+      pushToast("ok", "Linked handles updated", "Changes saved to your profile.");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  // ---- Student Actions ----
+  const checkInAttendance = useCallback(
+    async (lectureId, code) => {
+      const res = await apiFetch(`/api/lectures/${lectureId}/attendance`, {
+        method: "POST",
+        body: JSON.stringify({ code: String(code ?? "").trim() }),
+      });
+      if (!res.ok) {
+        return { ok: false, code: res.error.code, message: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Attendance recorded", "Your check-in has been saved.");
+      return { ok: true, submittedAt: res.data.record.submittedAt };
+    },
+    [hydrate, pushToast],
+  );
+
+  const verifyProblem = useCallback(
+    async (problemId) => {
+      const res = await apiFetch(`/api/problems/${problemId}/verify`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        return { result: "failed", message: res.error.message };
+      }
+      await hydrate();
+      if (res.data.result === "solved") {
+        pushToast("ok", "Provisional solve check passed", "Problem marked solved.");
+      }
+      return res.data;
+    },
+    [hydrate, pushToast],
+  );
+
+  // ---- Team Actions ----
+  const createTeam = useCallback(
+    async (name) => {
+      const res = await apiFetch("/api/teams", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Team created", `Invite code: ${res.data.inviteCode}`);
+      return { ok: true, team: res.data };
+    },
+    [hydrate, pushToast],
+  );
+
+  const joinTeam = useCallback(
+    async (inviteCode) => {
+      const res = await apiFetch("/api/teams/join", {
+        method: "POST",
+        body: JSON.stringify({ inviteCode }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Joined team", `Welcome to ${res.data.name}.`);
+      return { ok: true, team: res.data };
+    },
+    [hydrate, pushToast],
+  );
+
+  const leaveTeam = useCallback(async () => {
+    const res = await apiFetch("/api/teams/me/leave", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    if (!res.ok) {
+      return { ok: false, error: res.error.message };
+    }
+    await hydrate();
+    pushToast("info", "Left team");
+    return { ok: true };
+  }, [hydrate, pushToast]);
+
+  const removeTeamMember = useCallback(
+    async (userId) => {
+      const res = await apiFetch(`/api/teams/me/members/${userId}/remove`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Unable to remove member", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("info", "Member removed");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const transferCaptaincy = useCallback(
+    async (userId) => {
+      const res = await apiFetch("/api/teams/me/transfer", {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Transfer failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Captaincy transferred");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const disbandTeam = useCallback(
+    async (teamId) => {
+      const isAdmin = currentUser?.role === "admin" && teamId;
+      const url = isAdmin ? `/api/admin/teams/${teamId}/disband` : "/api/teams/me/disband";
+      const res = await apiFetch(url, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Unable to disband team", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("info", "Team disbanded");
+      return { ok: true };
+    },
+    [currentUser?.role, hydrate, pushToast],
+  );
+
+  // ---- Admin Actions ----
+  const restrictUser = useCallback(
+    async (userId, reason = "") => {
+      const res = await apiFetch(`/api/admin/users/${userId}/restrict`, {
+        method: "POST",
+        body: JSON.stringify({ reason: reason || undefined }),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Unable to restrict user", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("info", "Account restricted", res.data.name);
+      return { ok: true, user: res.data };
+    },
+    [hydrate, pushToast],
+  );
+
+  const reopenUser = useCallback(
+    async (userId) => {
+      const res = await apiFetch(`/api/admin/users/${userId}/reopen`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Unable to reopen account", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Account access restored", `${res.data.name} can now access the full platform.`);
+      return { ok: true, user: res.data };
+    },
+    [hydrate, pushToast],
+  );
+
+  const saveAnnouncement = useCallback(
+    async (payload) => {
+      const existing = payload.id ? store.announcements.find((a) => a.id === payload.id) : null;
+      const body = {
+        title: payload.title,
+        body: payload.body,
+        type: payload.type,
+      };
+      const res = payload.id
+        ? await apiFetch(`/api/admin/announcements/${payload.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          })
+        : await apiFetch("/api/admin/announcements", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+
+      let finalStatus = res.data.status;
+      if (payload.status === "published" && (!existing || existing.status === "draft")) {
+        const pubRes = await apiFetch(`/api/admin/announcements/${res.data.id}/publish`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        if (!pubRes.ok) {
+          await hydrate();
+          return { ok: false, error: pubRes.error.message };
+        }
+        finalStatus = "published";
+      }
+
+      await hydrate();
+      pushToast(
+        "ok",
+        finalStatus === "published" ? "Announcement published successfully" : "Announcement draft saved",
+      );
+      return { ok: true };
+    },
+    [store.announcements, hydrate, pushToast],
+  );
+
+  const publishAnnouncement = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/announcements/${id}/publish`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Publish failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Announcement published successfully");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const deleteAnnouncement = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/announcements/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        pushToast("bad", "Delete failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Announcement deleted");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const saveLecture = useCallback(
+    async (payload) => {
+      const existing = payload.id ? store.lectures.find((l) => l.id === payload.id) : null;
+      const body = {
+        title: payload.title,
+        description: payload.description ?? "",
         scheduledAt: payload.scheduledAt,
-        liveUrl: payload.liveUrl?.trim() || null,
-        status,
-        state: status === "published" ? "Upcoming" : "Draft",
+        liveUrl: payload.liveUrl?.trim() ? payload.liveUrl.trim() : null,
         resources: payload.resources ?? [],
       };
-      const lectures = isEdit
-        ? prev.lectures.map((l) => (l.id === id ? { ...l, ...nextLecture } : l))
-        : [nextLecture, ...prev.lectures];
-      return {
-        ...prev,
-        lectures,
-        auditLogs: appendAudit(
-          prev,
-          status === "published" ? "lecture.publish" : "lecture.manage",
-          "Lecture",
-          id,
-          `${status === "published" ? "Published" : "Saved"} lecture ${nextLecture.title}`,
-        ),
-      };
-    });
-    pushToast("ok", status === "published" ? "Lecture published" : "Lecture saved as draft");
-  }, [appendAudit, pushToast]);
+      const res = payload.id
+        ? await apiFetch(`/api/admin/lectures/${payload.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          })
+        : await apiFetch("/api/admin/lectures", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
 
-  const deleteLecture = useCallback((id) => {
-    const hasOpen = store.attendanceSessions.some((s) => s.lectureId === id && !s.closedAt);
-    if (hasOpen) {
-      pushToast("bad", "Cannot delete lecture", "Close the open attendance session before deleting this lecture.");
-      return { ok: false, error: "Close the open attendance session first." };
-    }
-    const lec = store.lectures.find((l) => l.id === id);
-    setStore((prev) => ({
-      ...prev,
-      lectures: prev.lectures.filter((l) => l.id !== id),
-      auditLogs: appendAudit(prev, "lecture.delete", "Lecture", id, `Deleted lecture ${lec?.title ?? id}`),
-    }));
-    pushToast("ok", "Lecture deleted");
-    return { ok: true };
-  }, [store.attendanceSessions, store.lectures, appendAudit, pushToast]);
+      let finalStatus = res.data.status;
+      if (payload.status === "published" && (!existing || existing.status === "draft")) {
+        const pubRes = await apiFetch(`/api/admin/lectures/${res.data.id}/publish`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        if (!pubRes.ok) {
+          await hydrate();
+          return { ok: false, error: pubRes.error.message };
+        }
+        finalStatus = "published";
+      }
 
-  const startAttendanceSession = useCallback((lectureId, validSeconds = 600) => {
-    const lec = store.lectures.find((l) => l.id === lectureId);
-    if (!lec) return { ok: false, error: "Lecture not found." };
-    const existingOpen = store.attendanceSessions.find((s) => s.lectureId === lectureId && !s.closedAt);
-    if (existingOpen && new Date(existingOpen.expiresAt).getTime() > Date.now()) {
-      return { ok: false, error: "An active attendance session is already open for this lecture." };
-    }
-    const now = Date.now();
-    const session = {
-      id: makeId("att-sess"),
-      lectureId,
-      lectureTitle: lec.title,
-      opensAt: new Date(now).toISOString(),
-      expiresAt: new Date(now + validSeconds * 1000).toISOString(),
-      closedAt: null,
-      code: randomCode(4, "0123456789"),
-      records: [],
-    };
-    setStore((prev) => ({
-      ...prev,
-      attendanceSessions: [
-        session,
-        ...prev.attendanceSessions.map((s) =>
-          s.lectureId === lectureId && !s.closedAt
-            ? { ...s, closedAt: new Date(now).toISOString(), code: null }
-            : s,
-        ),
-      ],
-      auditLogs: appendAudit(prev, "attendance.start", "AttendanceSession", session.id, `Started attendance session for ${lec.title}`),
-    }));
-    pushToast("ok", "Attendance session started", `Code: ${session.code}`);
-    return { ok: true, session };
-  }, [store.lectures, store.attendanceSessions, appendAudit, pushToast]);
+      await hydrate();
+      pushToast("ok", finalStatus === "published" ? "Lecture published" : "Lecture saved as draft");
+      return { ok: true };
+    },
+    [store.lectures, hydrate, pushToast],
+  );
 
-  const closeAttendanceSession = useCallback((sessionId) => {
-    const sess = store.attendanceSessions.find((s) => s.id === sessionId);
-    if (!sess) return;
-    setStore((prev) => ({
-      ...prev,
-      attendanceSessions: prev.attendanceSessions.map((s) =>
-        s.id === sessionId ? { ...s, closedAt: new Date().toISOString(), code: null } : s,
-      ),
-      auditLogs: appendAudit(prev, "attendance.close", "AttendanceSession", sessionId, `Closed attendance session for ${sess.lectureTitle}`),
-    }));
-    pushToast("info", "Attendance session closed");
-  }, [store.attendanceSessions, appendAudit, pushToast]);
+  const deleteLecture = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/lectures/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        pushToast("bad", "Cannot delete lecture", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Lecture deleted");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
 
-  const saveContest = useCallback((payload) => {
-    const id = payload.id ?? makeId("con");
-    const isEdit = Boolean(payload.id);
-    const publication = payload.publication === "published" ? "published" : "draft";
-    setStore((prev) => {
-      const existing = prev.contests.find((c) => c.id === id);
-      const next = {
-        id,
-        title: payload.title.trim(),
-        description: payload.description.trim(),
+  const startAttendanceSession = useCallback(
+    async (lectureId, validSeconds = 600) => {
+      const res = await apiFetch(`/api/admin/lectures/${lectureId}/attendance/start`, {
+        method: "POST",
+        body: JSON.stringify({ validForSeconds: Number(validSeconds) || 600 }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Attendance session started", `Code: ${res.data.code}`);
+      return { ok: true, session: res.data };
+    },
+    [hydrate, pushToast],
+  );
+
+  const closeAttendanceSession = useCallback(
+    async (sessionId) => {
+      const res = await apiFetch(`/api/admin/attendance/${sessionId}/close`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Unable to close session", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("info", "Attendance session closed");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const saveContest = useCallback(
+    async (payload) => {
+      const existing = payload.id ? store.contests.find((c) => c.id === payload.id) : null;
+      const body = {
+        title: payload.title,
+        description: payload.description ?? "",
         mode: payload.mode === "team" ? "team" : "individual",
         platform: "codeforces",
         platformContestId: String(payload.platformContestId).trim(),
         url: payload.url.trim(),
-        invitationUrl: payload.invitationUrl?.trim() || null,
+        invitationUrl: payload.invitationUrl?.trim() ? payload.invitationUrl.trim() : null,
         startsAt: payload.startsAt,
         durationMinutes: Number(payload.durationMinutes) || (payload.mode === "team" ? 10080 : 120),
-        status: payload.status ?? "upcoming",
-        publication,
-        resultsState: existing?.resultsState ?? "not_fetched",
-        lastFetchedAt: existing?.lastFetchedAt ?? null,
-        fetchSummary: existing?.fetchSummary ?? null,
       };
-      const contests = isEdit
-        ? prev.contests.map((c) => (c.id === id ? next : c))
-        : [next, ...prev.contests];
-      return {
-        ...prev,
-        contests,
-        auditLogs: appendAudit(
-          prev,
-          publication === "published" ? "contest.publish" : "contest.manage",
-          "Contest",
-          id,
-          `${publication === "published" ? "Published" : "Saved"} contest ${next.title}`,
-        ),
+      const res = payload.id
+        ? await apiFetch(`/api/admin/contests/${payload.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          })
+        : await apiFetch("/api/admin/contests", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+
+      let finalPub = res.data.publication;
+      if (payload.publication === "published" && (!existing || existing.publication === "draft")) {
+        const pubRes = await apiFetch(`/api/admin/contests/${res.data.id}/publish`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        if (!pubRes.ok) {
+          await hydrate();
+          return { ok: false, error: pubRes.error.message };
+        }
+        finalPub = "published";
+      }
+
+      await hydrate();
+      pushToast("ok", finalPub === "published" ? "Contest published" : "Contest draft saved");
+      return { ok: true };
+    },
+    [store.contests, hydrate, pushToast],
+  );
+
+  const deleteContest = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/contests/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        pushToast("bad", "Delete failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Contest deleted");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const fetchContestResults = useCallback(
+    async (contestId) => {
+      const res = await apiFetch(`/api/admin/contests/${contestId}/results/fetch`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await Promise.all([hydrate(), loadContestResults(contestId, true)]);
+      pushToast("ok", "Results fetched successfully", `${res.data.matched} participants matched.`);
+      return { ok: true, summary: res.data };
+    },
+    [hydrate, loadContestResults, pushToast],
+  );
+
+  const publishContestResults = useCallback(
+    async (contestId) => {
+      const res = await apiFetch(`/api/admin/contests/${contestId}/results/publish`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        pushToast("bad", "Publish failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await Promise.all([hydrate(), loadContestResults(contestId, true)]);
+      pushToast("ok", "Results published", "Standings are now visible to students.");
+      return { ok: true };
+    },
+    [hydrate, loadContestResults, pushToast],
+  );
+
+  const saveTopic = useCallback(
+    async (payload) => {
+      const body = {
+        name: payload.name,
+        ...(payload.slug?.trim() ? { slug: payload.slug.trim() } : {}),
+        ...(payload.order !== "" && payload.order !== undefined ? { order: Number(payload.order) } : {}),
       };
-    });
-    pushToast("ok", publication === "published" ? "Contest published" : "Contest draft saved");
-  }, [appendAudit, pushToast]);
+      const res = payload.id
+        ? await apiFetch(`/api/admin/topics/${payload.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          })
+        : await apiFetch("/api/admin/topics", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", payload.id ? "Topic updated" : "Topic created");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
 
-  const deleteContest = useCallback((id) => {
-    const c = store.contests.find((x) => x.id === id);
-    setStore((prev) => ({
-      ...prev,
-      contests: prev.contests.filter((x) => x.id !== id),
-      auditLogs: appendAudit(prev, "contest.delete", "Contest", id, `Deleted contest ${c?.title ?? id}`),
-    }));
-    pushToast("ok", "Contest deleted");
-  }, [store.contests, appendAudit, pushToast]);
+  const deleteTopic = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/topics/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        pushToast("bad", "Cannot delete topic", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Topic deleted");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
 
-  const fetchContestResults = useCallback((contestId, simulateError = false) => {
-    const contest = store.contests.find((c) => c.id === contestId);
-    if (!contest) return { ok: false, error: "Contest not found." };
-    if (contest.resultsState === "published") {
-      return { ok: false, error: "Published results cannot be overwritten." };
-    }
-    if (simulateError) {
-      return { ok: false, error: "Unable to fetch Codeforces standings. Check the contest ID and try again." };
-    }
-    const nowIso = new Date().toISOString();
-    const generatedRows = [
-      { userId: "u-hana", teamId: "team-1", rank: 1, name: "Hana Tesfaye", handle: "hana_t", points: 1320, penalty: 185 },
-      { userId: "u-ibrahim", teamId: "team-1", rank: 2, name: "Ibrahim Kedir", handle: "ibrahimkediramdela2211", points: 1180, penalty: 310 },
-      { userId: "u-yonas", teamId: "team-1", rank: 3, name: "Yonas Alemu", handle: "yonas_a", points: 1090, penalty: 400 },
-      { userId: "u-dawit", teamId: "team-2", rank: 4, name: "Dawit Haile", handle: "dawit_h", points: 960, penalty: 520 },
-      { userId: "u-sara", teamId: "team-2", rank: 5, name: "Sara Mohammed", handle: "sara_m", points: 890, penalty: 610 },
-    ];
-    const generatedTeams = contest.mode === "team"
-      ? [
-          { teamId: "team-1", teamName: "Binary Hawks", rank: 1, points: 3590, penalty: 895, memberCount: 4, matchedMembers: 3 },
-          { teamId: "team-2", teamName: "Stack Overflowers", rank: 2, points: 1850, penalty: 1130, memberCount: 2, matchedMembers: 2 },
-        ]
-      : [];
-    const summary = {
-      processed: 12,
-      matched: generatedRows.length,
-      unmatchedHandles: ["tourist_x", "new_handle_22", "guest_904"],
-      teamsMatched: contest.mode === "team" ? generatedTeams.length : undefined,
-    };
-
-    setStore((prev) => ({
-      ...prev,
-      contests: prev.contests.map((c) =>
-        c.id === contestId
-          ? { ...c, resultsState: "fetched", lastFetchedAt: nowIso, fetchSummary: summary }
-          : c,
-      ),
-      contestResults: { ...prev.contestResults, [contestId]: generatedRows },
-      teamContestResults: contest.mode === "team"
-        ? { ...prev.teamContestResults, [contestId]: generatedTeams }
-        : prev.teamContestResults,
-      auditLogs: appendAudit(prev, "results.fetch", "Contest", contestId, `Fetched Codeforces standings for ${contest.title}`),
-    }));
-    pushToast("ok", "Results fetched successfully", `${summary.matched} participants matched.`);
-    return { ok: true, summary };
-  }, [store.contests, appendAudit, pushToast]);
-
-  const publishContestResults = useCallback((contestId) => {
-    const contest = store.contests.find((c) => c.id === contestId);
-    if (!contest || contest.resultsState !== "fetched") {
-      return { ok: false, error: "Fetch results before publishing." };
-    }
-    setStore((prev) => ({
-      ...prev,
-      contests: prev.contests.map((c) =>
-        c.id === contestId ? { ...c, resultsState: "published", status: "completed" } : c,
-      ),
-      auditLogs: appendAudit(prev, "results.publish", "Contest", contestId, `Published results for ${contest.title}`),
-    }));
-    pushToast("ok", "Results published", `${contest.title} standings are now visible to students.`);
-    return { ok: true };
-  }, [store.contests, appendAudit, pushToast]);
-
-  const saveTopic = useCallback((payload) => {
-    const id = payload.id ?? slugify(payload.name);
-    const isEdit = Boolean(payload.id);
-    const slug = slugify(payload.slug || payload.name);
-    if (!isEdit && store.topics.some((t) => t.slug === slug)) {
-      return { ok: false, error: "A topic with this slug already exists." };
-    }
-    setStore((prev) => {
-      const next = { id, name: payload.name.trim(), slug, order: Number(payload.order) || prev.topics.length + 1 };
-      const topics = isEdit ? prev.topics.map((t) => (t.id === id ? next : t)) : [...prev.topics, next];
-      return {
-        ...prev,
-        topics,
-        auditLogs: appendAudit(prev, "topics.manage", "Topic", id, `${isEdit ? "Updated" : "Created"} topic ${next.name}`),
-      };
-    });
-    pushToast("ok", isEdit ? "Topic updated" : "Topic created");
-    return { ok: true };
-  }, [store.topics, appendAudit, pushToast]);
-
-  const deleteTopic = useCallback((id) => {
-    const hasProblems = store.problems.some((p) => p.topicId === id);
-    if (hasProblems) {
-      pushToast("bad", "Cannot delete topic", "Remove or reassign problems in this topic before deleting it.");
-      return { ok: false, error: "Topic still has problems." };
-    }
-    const topic = store.topics.find((t) => t.id === id);
-    setStore((prev) => ({
-      ...prev,
-      topics: prev.topics.filter((t) => t.id !== id),
-      auditLogs: appendAudit(prev, "topics.delete", "Topic", id, `Deleted topic ${topic?.name ?? id}`),
-    }));
-    pushToast("ok", "Topic deleted");
-    return { ok: true };
-  }, [store.problems, store.topics, appendAudit, pushToast]);
-
-  const saveProblem = useCallback((payload) => {
-    const id = payload.id ?? makeId("p");
-    const isEdit = Boolean(payload.id);
-    setStore((prev) => {
-      const next = {
-        id,
-        title: payload.title.trim(),
+  const saveProblem = useCallback(
+    async (payload) => {
+      const existing = payload.id ? store.problems.find((p) => p.id === payload.id) : null;
+      const body = {
+        title: payload.title,
         topicId: payload.topicId,
         platform: payload.platform,
+        url: payload.url,
         value: payload.value ? Number(payload.value) : null,
-        url: payload.url.trim(),
-        externalRef: payload.platform === "codeforces"
-          ? { contestId: Number(payload.contestId) || 1, index: payload.index || "A" }
-          : { titleSlug: payload.titleSlug || slugify(payload.title) },
-        status: payload.status === "published" ? "published" : "draft",
+        externalRef:
+          payload.platform === "codeforces"
+            ? {
+                contestId: Number(payload.contestId) || 1,
+                index: String(payload.index || "A").trim().toUpperCase(),
+              }
+            : {
+                titleSlug: String(payload.titleSlug || "").trim(),
+              },
       };
-      const problems = isEdit ? prev.problems.map((p) => (p.id === id ? next : p)) : [next, ...prev.problems];
-      return {
-        ...prev,
-        problems,
-        auditLogs: appendAudit(prev, "problems.manage", "Problem", id, `${isEdit ? "Updated" : "Added"} problem ${next.title}`),
-      };
+      const res = payload.id
+        ? await apiFetch(`/api/admin/problems/${payload.id}`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          })
+        : await apiFetch("/api/admin/problems", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+
+      if (payload.status === "published" && (!existing || existing.status === "draft")) {
+        const pubRes = await apiFetch(`/api/admin/problems/${res.data.id}/publish`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        if (!pubRes.ok) {
+          await hydrate();
+          return { ok: false, error: pubRes.error.message };
+        }
+      }
+
+      await hydrate();
+      pushToast("ok", payload.id ? "Problem updated" : "Problem added");
+      return { ok: true };
+    },
+    [store.problems, hydrate, pushToast],
+  );
+
+  const deleteProblem = useCallback(
+    async (id) => {
+      const res = await apiFetch(`/api/admin/problems/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        pushToast("bad", "Delete failed", res.error.message);
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Problem deleted");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
+
+  const setupTwoFactor = useCallback(async (password) => {
+    const res = await apiFetch("/api/admin/security/2fa/setup", {
+      method: "POST",
+      body: JSON.stringify({ password }),
     });
-    pushToast("ok", isEdit ? "Problem updated" : "Problem added");
-  }, [appendAudit, pushToast]);
-
-  const deleteProblem = useCallback((id) => {
-    const prob = store.problems.find((p) => p.id === id);
-    setStore((prev) => ({
-      ...prev,
-      problems: prev.problems.filter((p) => p.id !== id),
-      auditLogs: appendAudit(prev, "problems.delete", "Problem", id, `Deleted problem ${prob?.title ?? id}`),
-    }));
-    pushToast("ok", "Problem deleted");
-  }, [store.problems, appendAudit, pushToast]);
-
-  const enrollTwoFactor = useCallback((code) => {
-    if (!/^\d{6}$/.test(String(code ?? ""))) {
-      return { ok: false, error: "Invalid verification code. Enter the 6 digits from your authenticator." };
+    if (!res.ok) {
+      return { ok: false, error: res.error.message };
     }
-    setStore((prev) => ({
-      ...prev,
-      admin2faEnabled: true,
-      users: prev.users.map((u) =>
-        u.id === prev.currentUserId ? { ...u, twoFactorEnabled: true } : u,
-      ),
-      auditLogs: appendAudit(prev, "twofa.enroll", "User", prev.currentUserId ?? "u-marta", "Enrolled admin two-factor authentication"),
-    }));
-    pushToast("ok", "Two-factor authentication enabled");
-    return { ok: true };
-  }, [appendAudit, pushToast]);
+    return { ok: true, secret: res.data.secret, otpauthUri: res.data.otpauthUri };
+  }, []);
+
+  const enrollTwoFactor = useCallback(
+    async (code) => {
+      const res = await apiFetch("/api/admin/security/2fa/confirm", {
+        method: "POST",
+        body: JSON.stringify({ code: String(code ?? "").trim() }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: res.error.message };
+      }
+      await hydrate();
+      pushToast("ok", "Two-factor authentication enabled");
+      return { ok: true };
+    },
+    [hydrate, pushToast],
+  );
 
   const value = useMemo(
     () => ({
@@ -844,7 +1166,10 @@ export function PlatformProvider({ children }) {
       currentUser,
       currentTeam,
       pushToast,
+      hydrate,
       resetDemoData,
+      loadContestResults,
+      loadStudentProgress,
       login,
       verifyTwoFactor,
       register,
@@ -859,6 +1184,7 @@ export function PlatformProvider({ children }) {
       removeTeamMember,
       transferCaptaincy,
       disbandTeam,
+      restrictUser,
       reopenUser,
       saveAnnouncement,
       publishAnnouncement,
@@ -875,6 +1201,7 @@ export function PlatformProvider({ children }) {
       deleteTopic,
       saveProblem,
       deleteProblem,
+      setupTwoFactor,
       enrollTwoFactor,
     }),
     [
@@ -883,7 +1210,10 @@ export function PlatformProvider({ children }) {
       currentUser,
       currentTeam,
       pushToast,
+      hydrate,
       resetDemoData,
+      loadContestResults,
+      loadStudentProgress,
       login,
       verifyTwoFactor,
       register,
@@ -898,6 +1228,7 @@ export function PlatformProvider({ children }) {
       removeTeamMember,
       transferCaptaincy,
       disbandTeam,
+      restrictUser,
       reopenUser,
       saveAnnouncement,
       publishAnnouncement,
@@ -914,6 +1245,7 @@ export function PlatformProvider({ children }) {
       deleteTopic,
       saveProblem,
       deleteProblem,
+      setupTwoFactor,
       enrollTwoFactor,
     ],
   );

@@ -24,31 +24,42 @@ const QR_BITS = [
   1,1,1,0,1,0,1,1,1,
 ];
 
-const MANUAL_SECRET = "NCCD SA2F A7K9 M4PQ";
-
 export default function AdminTwoFactorPage() {
-  const { store, currentUser, enrollTwoFactor } = usePlatform();
+  const { store, currentUser, setupTwoFactor, enrollTwoFactor } = usePlatform();
   const [step, setStep] = useState(1); // 1 = password verify, 2 = scan + OTP confirm
   const [password, setPassword] = useState("");
+  const [setupData, setSetupData] = useState({ secret: "", otpauthUri: "" });
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const enrolled = Boolean(store.admin2faEnabled && currentUser?.twoFactorEnabled);
 
-  function handlePasswordStep(e) {
+  async function handlePasswordStep(e) {
     e.preventDefault();
     setError("");
-    if (password.length < 4) {
+    if (!password) {
       setError("Enter your current admin password to begin 2FA setup.");
       return;
     }
+    setLoading(true);
+    const res = await setupTwoFactor(password);
+    setLoading(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setSetupData({ secret: res.secret, otpauthUri: res.otpauthUri });
+    setPassword("");
     setStep(2);
   }
 
-  function handleConfirmOtp(e) {
+  async function handleConfirmOtp(e) {
     e.preventDefault();
     setError("");
-    const res = enrollTwoFactor(otp);
+    setLoading(true);
+    const res = await enrollTwoFactor(otp);
+    setLoading(false);
     if (!res.ok) {
       setError(res.error);
       return;
@@ -103,13 +114,15 @@ export default function AdminTwoFactorPage() {
               placeholder="Enter password (e.g. adminpass123)"
             />
             <div>
-              <Button type="submit">Continue to QR setup</Button>
+              <Button type="submit" loading={loading}>
+                Continue to QR setup
+              </Button>
             </div>
           </form>
         ) : (
           <form onSubmit={handleConfirmOtp} className="mt-4 flex flex-col gap-4">
             <p className="m-0 text-sm text-fg-2">
-              Scan this code in your authenticator app or enter the manual key, then enter any 6-digit code to verify enrollment.
+              Enter this manual secret or URI into your authenticator app, then enter the generated 6-digit code to verify enrollment.
             </p>
 
             <div className="flex flex-wrap items-center gap-5 rounded-[3px] border border-border bg-sunken p-4">
@@ -128,12 +141,17 @@ export default function AdminTwoFactorPage() {
                 <span className="block text-xs font-semibold tracking-wider text-muted uppercase">
                   Manual Setup Key
                 </span>
-                <code className="mt-1 block font-mono text-sm font-semibold text-fg">
-                  {MANUAL_SECRET}
+                <code className="mt-1 block break-all font-mono text-sm font-semibold text-fg">
+                  {setupData.secret}
                 </code>
                 <span className="mt-1.5 block text-xs text-muted">
                   Account: {currentUser?.email ?? "admin@ncc.edu"}
                 </span>
+                {setupData.otpauthUri ? (
+                  <span className="mt-1 block break-all font-mono text-[11px] text-muted">
+                    {setupData.otpauthUri}
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -148,7 +166,7 @@ export default function AdminTwoFactorPage() {
             />
 
             <div className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={otp.length !== 6}>
+              <Button type="submit" loading={loading} disabled={otp.length !== 6}>
                 Verify &amp; enable 2FA
               </Button>
               <Button variant="outline" onClick={() => setStep(1)}>

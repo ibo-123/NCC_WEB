@@ -57,16 +57,20 @@ export default function AdminContestsPage() {
     setFormOpen(true);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (!form.title.trim() || !form.platformContestId.trim() || !form.url.trim()) {
       setFormError("Provide a title, Codeforces contest ID, and URL.");
       return;
     }
-    saveContest({
+    const res = await saveContest({
       ...form,
       startsAt: new Date(form.startsAt).toISOString(),
     });
+    if (!res?.ok) {
+      setFormError(res?.error ?? "Unable to save contest.");
+      return;
+    }
     setFormOpen(false);
   }
 
@@ -253,8 +257,8 @@ export default function AdminContestsPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (deleteTarget) deleteContest(deleteTarget.id);
+              onClick={async () => {
+                if (deleteTarget) await deleteContest(deleteTarget.id);
                 setDeleteTarget(null);
               }}
             >

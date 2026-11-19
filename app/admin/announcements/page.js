@@ -39,13 +39,17 @@ export default function AdminAnnouncementsPage() {
     setFormOpen(true);
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     if (form.title.trim().length < 3 || form.body.trim().length < 5) {
       setFormError("Provide a title (at least 3 characters) and announcement body.");
       return;
     }
-    saveAnnouncement(form);
+    const res = await saveAnnouncement(form);
+    if (!res?.ok) {
+      setFormError(res?.error ?? "Unable to save announcement.");
+      return;
+    }
     setFormOpen(false);
   }
 
@@ -187,8 +191,8 @@ export default function AdminAnnouncementsPage() {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                if (deleteTarget) deleteAnnouncement(deleteTarget.id);
+              onClick={async () => {
+                if (deleteTarget) await deleteAnnouncement(deleteTarget.id);
                 setDeleteTarget(null);
               }}
             >

@@ -75,8 +75,17 @@ export function StreakView({ initialTab = "individual" }) {
       ) : (
         <>
           <section className="grid gap-4 sm:grid-cols-3">
-            <Stat label="Current Streak" value="14 days" hint="Qualifying daily activity" trend="up" />
-            <Stat label="Longest Streak" value="21 days" hint="Personal cohort best" />
+            <Stat
+              label="Current Streak"
+              value={`${store.individualStreak?.current ?? 0} days`}
+              hint="Qualifying daily activity"
+              trend={(store.individualStreak?.current ?? 0) > 0 ? "up" : undefined}
+            />
+            <Stat
+              label="Longest Streak"
+              value={`${store.individualStreak?.longest ?? 0} days`}
+              hint="Personal cohort best"
+            />
             <Stat label="Active Days (18w)" value={store.heatmapIndividual.filter((c) => c.count > 0).length} hint="Last 126 days" />
           </section>
 

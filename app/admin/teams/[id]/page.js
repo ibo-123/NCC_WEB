@@ -119,8 +119,8 @@ export default function AdminTeamDetailPage() {
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => {
-                    disbandTeam(team.id);
+                  onClick={async () => {
+                    await disbandTeam(team.id);
                     setConfirmDisband(false);
                   }}
                 >

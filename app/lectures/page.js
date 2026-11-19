@@ -73,9 +73,15 @@ export default function LecturesPage() {
               <Card key={lec.id} className="flex flex-col justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Badge tone={hasOpenSession ? "danger" : statusToTone(lec.state)} dot={hasOpenSession}>
-                      {hasOpenSession ? "Attendance open" : lec.state}
-                    </Badge>
+                    {hasOpenSession ? (
+                      <Badge tone="danger" dot>
+                        Attendance open
+                      </Badge>
+                    ) : lec.state ? (
+                      <Badge tone={statusToTone(lec.state)}>{lec.state}</Badge>
+                    ) : (
+                      <Badge tone="published">Published</Badge>
+                    )}
                     <span className="text-xs text-muted tabular-nums">{formatDateTime(lec.scheduledAt)}</span>
                   </div>
                   <h2 className="mt-2.5 mb-0 text-lg font-semibold tracking-tight">

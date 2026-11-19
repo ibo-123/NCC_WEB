@@ -39,10 +39,10 @@ export default function StudentAttendancePage() {
     };
   });
 
-  function handleCheckIn(e) {
+  async function handleCheckIn(e) {
     e.preventDefault();
     if (!activeSession) return;
-    const res = checkInAttendance(activeSession.lectureId, code);
+    const res = await checkInAttendance(activeSession.lectureId, code);
     if (!res.ok) {
       setFeedback({ tone: "danger", message: res.message });
       return;
@@ -104,8 +104,13 @@ export default function StudentAttendancePage() {
           ) : (
             <form onSubmit={handleCheckIn} className="flex flex-col gap-4">
               <p className="m-0 text-sm text-fg-2">
-                Enter the 4-digit session code from your instructor. (Demo code:{" "}
-                <code className="font-mono font-semibold text-fg">{activeSession.code}</code>)
+                Enter the 4-digit session code from your instructor.
+                {activeSession.code ? (
+                  <>
+                    {" "}
+                    (Code: <code className="font-mono font-semibold text-fg">{activeSession.code}</code>)
+                  </>
+                ) : null}
               </p>
 
               {feedback ? (

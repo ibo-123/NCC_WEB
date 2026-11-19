@@ -25,10 +25,10 @@ export default function ProfilePage() {
     setLeetcode(currentUser?.handles?.leetcode ?? "");
   }, [currentUser?.id, currentUser?.handles?.codeforces, currentUser?.handles?.leetcode]);
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
     setSavedBanner(false);
-    const res = updateHandles({ codeforces, leetcode });
+    const res = await updateHandles({ codeforces, leetcode });
     if (!res.ok) {
       setFieldErrors(res.fieldErrors ?? {});
       return;

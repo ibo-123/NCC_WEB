@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { PlatformShell } from "@/components/layout/PlatformShell.js";
@@ -13,10 +14,18 @@ import { formatDateTime, statusToTone } from "@/lib/status.js";
 
 export default function ContestDetailPage() {
   const { id } = useParams();
-  const { store, currentUser, currentTeam } = usePlatform();
+  const { store, currentUser, currentTeam, loadContestResults } = usePlatform();
 
   const contest = store.contests.find((c) => c.id === id && c.publication === "published");
   const isTeam = contest?.mode === "team";
+
+  const contestId = contest?.id ?? null;
+  const resultsPublished = contest?.resultsState === "published";
+  useEffect(() => {
+    if (contestId && resultsPublished) {
+      loadContestResults(contestId);
+    }
+  }, [contestId, resultsPublished, loadContestResults]);
 
   const personalStanding =
     contest && !isTeam && currentUser
